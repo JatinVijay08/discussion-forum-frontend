@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-[#140e2657] text-white antialiased selection:bg-orange-500 selection:text-white;
+    /* Force dark class on everything provided by ThemeContext, but base is black now */
+  }
+}

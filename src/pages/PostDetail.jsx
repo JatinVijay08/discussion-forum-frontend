@@ -12,6 +12,8 @@ export default function PostDetail() {
 
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [loadingComments, setLoadingComments] = useState(true);
@@ -21,7 +23,7 @@ export default function PostDetail() {
     useEffect(() => {
         fetchPost();
         if (showComments) {
-            fetchComments();
+            fetchComments(0);
         }
     }, [id]);
 
@@ -36,11 +38,13 @@ export default function PostDetail() {
         }
     };
 
-    const fetchComments = async () => {
+    const fetchComments = async (page = currentPage) => {
         try {
-            // Assuming page 0, size 50 for now to keep it simple
-            const data = await commentService.getCommentsByPostId(id, 0, 50);
-            setComments(data.content || []); // data is Page<CommentResponse>, so content is the array
+            setLoadingComments(true);
+            const data = await commentService.getCommentsByPostId(id, page, 5); // Size 5 for testing/pagination
+            setComments(data.content || []);
+            setTotalPages(data.totalPages || 0);
+            setCurrentPage(data.number || page); // Use returned page number or requested one
         } catch (error) {
             console.error("Failed to load comments", error);
             setComments([]);
@@ -49,11 +53,17 @@ export default function PostDetail() {
         }
     };
 
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            fetchComments(newPage);
+        }
+    };
+
     const handleCommentToggle = () => {
         const nextState = !showComments;
         setShowComments(nextState);
         if (nextState && comments.length === 0) {
-            fetchComments();
+            fetchComments(0);
         }
     };
 
@@ -65,7 +75,7 @@ export default function PostDetail() {
             await commentService.addComment(id, newComment);
             setNewComment('');
             setShowAddCommentForm(false);
-            fetchComments(); // Reload comments
+            fetchComments(0); // Reload to first page to see new comment
             fetchPost(); // Reload post to update comment count if needed
         } catch (error) {
             console.error("Failed to add comment", error);
@@ -168,24 +178,77 @@ export default function PostDetail() {
                             {comments.length === 0 ? (
                                 <p className="text-zinc-400 text-center text-sm py-8 italic">No comments yet. Be the first one!</p>
                             ) : (
-                                comments.map((comment) => (
-                                    <div key={comment.id} className="flex gap-3 group">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 text-xs font-bold shrink-0 shadow-inner">
-                                            {comment.username ? comment.username[0].toUpperCase() : 'U'}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-sm font-bold text-white">
-                                                    {comment.username || 'User'}
-                                                </span>
-                                                <span className="text-xs text-zinc-500">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                <>
+                                    {comments.map((comment) => (
+                                        <div key={comment.id} className="flex gap-3 group">
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 text-xs font-bold shrink-0 shadow-inner">
+                                                {comment.username ? comment.username[0].toUpperCase() : 'U'}
                                             </div>
-                                            <div className="text-sm text-zinc-300 whitespace-pre-line break-all leading-relaxed bg-zinc-900/50 p-3 rounded-lg rounded-tl-none border border-white/5">
-                                                {comment.content}
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-sm font-bold text-white">
+                                                        {comment.username || 'User'}
+                                                    </span>
+                                                    <span className="text-xs text-zinc-500">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="text-sm text-zinc-300 whitespace-pre-line break-all leading-relaxed bg-zinc-900/50 p-3 rounded-lg rounded-tl-none border border-white/5">
+                                                    {comment.content}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))
+                                    ))}
+
+                                    {/* Pagination Controls */}
+                                    {totalPages > 1 && (
+                                        <div className="flex justify-center items-center gap-2 mt-8 pt-4 border-t border-white/5">
+                                            <button
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                disabled={currentPage === 0}
+                                                className="px-3 py-1 text-xs font-bold rounded-md bg-zinc-800 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-700 hover:text-white transition-colors"
+                                            >
+                                                Previous
+                                            </button>
+
+                                            <div className="flex gap-1">
+                                                {[...Array(totalPages)].map((_, index) => {
+                                                    // Show limited page numbers if there are too many
+                                                    if (
+                                                        index === 0 ||
+                                                        index === totalPages - 1 ||
+                                                        (index >= currentPage - 1 && index <= currentPage + 1)
+                                                    ) {
+                                                        return (
+                                                            <button
+                                                                key={index}
+                                                                onClick={() => handlePageChange(index)}
+                                                                className={`w-7 h-7 flex items-center justify-center text-xs font-bold rounded-md transition-all ${currentPage === index
+                                                                    ? 'bg-orange-600 text-white shadow-md shadow-orange-900/20'
+                                                                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                                                    }`}
+                                                            >
+                                                                {index + 1}
+                                                            </button>
+                                                        );
+                                                    } else if (
+                                                        index === currentPage - 2 ||
+                                                        index === currentPage + 2
+                                                    ) {
+                                                        return <span key={index} className="text-zinc-600 text-xs self-end pb-1">...</span>;
+                                                    }
+                                                    return null;
+                                                })}
+                                            </div>
+
+                                            <button
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                disabled={currentPage === totalPages - 1}
+                                                className="px-3 py-1 text-xs font-bold rounded-md bg-zinc-800 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-700 hover:text-white transition-colors"
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}

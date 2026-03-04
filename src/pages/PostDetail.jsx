@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { postService, commentService } from '../api/services';
 import PostCard from '../components/PostCard';
-import { Loader2, ArrowLeft, Send, MessageSquare } from 'lucide-react';
+import { Loader2, ArrowLeft, Send, MessageSquare, ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function PostDetail() {
@@ -12,6 +12,7 @@ export default function PostDetail() {
 
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
+    const [replyingTo, setReplyingTo] = useState(null); // ID of comment being replied to
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [newComment, setNewComment] = useState('');
@@ -41,10 +42,39 @@ export default function PostDetail() {
     const fetchComments = async (page = currentPage) => {
         try {
             setLoadingComments(true);
-            const data = await commentService.getCommentsByPostId(id, page, 5); // Size 5 for testing/pagination
-            setComments(data.content || []);
+            const data = await commentService.getCommentsByPostId(id, page, 50); // Increased size to fetch more for nesting
+
+            // Build the comment tree
+            const flatComments = data.content || [];
+            const commentMap = {};
+            const rootComments = [];
+
+            // First pass: create map
+            flatComments.forEach(comment => {
+                comment.replies = [];
+                commentMap[comment.id] = comment;
+            });
+
+            // Second pass: link children to parents
+            flatComments.forEach(comment => {
+                // If parentComment is a valid ID (not null, 'null', or 0), it's a reply
+                if (comment.parentComment && comment.parentComment !== 'null' && comment.parentComment !== 0) {
+                    const parent = commentMap[comment.parentComment];
+                    if (parent) {
+                        parent.replies.push(comment);
+                    } else {
+                        // Orphaned reply, treat as root for now or ignore
+                        rootComments.push(comment);
+                    }
+                } else {
+                    // No valid parentComment -> root comment
+                    rootComments.push(comment);
+                }
+            });
+
+            setComments(rootComments);
             setTotalPages(data.totalPages || 0);
-            setCurrentPage(data.number || page); // Use returned page number or requested one
+            setCurrentPage(data.number || page);
         } catch (error) {
             console.error("Failed to load comments", error);
             setComments([]);
@@ -67,19 +97,171 @@ export default function PostDetail() {
         }
     };
 
-    const handleCommentSubmit = async (e) => {
-        e.preventDefault();
-        if (!newComment.trim()) return;
+    const handleCommentSubmit = async (e, parentId = null) => {
+        e?.preventDefault(); // e is optional for replies
+        const content = parentId ? newComment : newComment; // Reuse state for main input, but replies usually have own form. 
+        // Wait, for specific replies we need specific input. 
+        // Let's refactor: main form uses newComment. Reply forms will use their own local state.
+
+        if (!content.trim()) return;
 
         try {
-            await commentService.addComment(id, newComment);
+            await commentService.addComment(id, content, parentId);
             setNewComment('');
-            setShowAddCommentForm(false);
-            fetchComments(0); // Reload to first page to see new comment
-            fetchPost(); // Reload post to update comment count if needed
+            setReplyingTo(null);
+            fetchComments(0);
+            fetchPost();
         } catch (error) {
             console.error("Failed to add comment", error);
         }
+    };
+
+    // Recursive Component for rendering comments
+    const CommentItem = ({ comment, depth = 0 }) => {
+        const [replyContent, setReplyContent] = useState('');
+        const isReplying = replyingTo === comment.id;
+
+        const submitReply = async (e) => {
+            e.preventDefault();
+            if (!replyContent.trim()) return;
+            try {
+                await commentService.addComment(id, replyContent, comment.id);
+                setReplyContent('');
+                setReplyingTo(null);
+                fetchComments(0); // Refresh tree
+            } catch (error) {
+                console.error("Failed to post reply", error);
+            }
+        };
+
+        const [localComment, setLocalComment] = useState(comment);
+
+        useEffect(() => {
+            setLocalComment(comment);
+        }, [comment]);
+
+        const handleVote = async (e, type) => {
+            e.stopPropagation();
+            if (!user) {
+                navigate('/login');
+                return;
+            }
+            try {
+                const updatedComment = await commentService.voteOnComment(localComment.id, type);
+                let newVoteType = updatedComment.voteType;
+                if (newVoteType === 'null' || newVoteType === undefined) {
+                    newVoteType = null;
+                }
+
+                setLocalComment(prev => ({
+                    ...prev,
+                    ...updatedComment,
+                    voteType: newVoteType,
+                    voteCount: updatedComment.voteCount ?? prev.voteCount,
+                    // keep replies intact since voteOnComment won't return nested replies
+                    replies: prev.replies,
+                    // CRITICAL FIX: The voteOnComment endpoint might incorrectly return the logged-in user's username.
+                    // To prevent the comment author from visually changing to the logged-in user, we explicitly
+                    // retain the original comment username.
+                    username: prev.username
+                }));
+            } catch (error) {
+                console.error("Vote failed", error);
+            }
+        };
+
+        return (
+            <div className={`flex flex-col gap-3 group ${depth > 0 ? 'ml-8 md:ml-12 border-l-2 border-white/5 pl-4' : ''}`}>
+                <div className="flex gap-3">
+                    {/* Vote Sidebar for Comment */}
+                    <div className="flex flex-col items-center pt-1 w-8 shrink-0">
+                        <button
+                            onClick={(e) => handleVote(e, 'upvote')}
+                            className={`p-1 rounded-full transition-colors cursor-pointer ${localComment.voteType === 'upvote' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:bg-zinc-800 hover:text-orange-400'}`}
+                        >
+                            <ArrowBigUp className={`w-5 h-5 ${localComment.voteType === 'upvote' ? 'fill-current' : ''}`} />
+                        </button>
+                        <span className={`text-xs font-bold my-0.5 ${localComment.voteType === 'upvote' ? 'text-orange-500' : localComment.voteType === 'downvote' ? 'text-blue-500' : 'text-zinc-400'}`}>
+                            {localComment.voteCount || 0}
+                        </span>
+                        <button
+                            onClick={(e) => handleVote(e, 'downvote')}
+                            className={`p-1 rounded-full transition-colors cursor-pointer ${localComment.voteType === 'downvote' ? 'text-blue-500 bg-blue-500/10' : 'text-zinc-500 hover:bg-zinc-800 hover:text-blue-400'}`}
+                        >
+                            <ArrowBigDown className={`w-5 h-5 ${localComment.voteType === 'downvote' ? 'fill-current' : ''}`} />
+                        </button>
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 text-[10px] font-bold shadow-inner">
+                                {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
+                            </div>
+                            <span className="text-sm font-bold text-white">
+                                {localComment.username || 'User'}
+                            </span>
+                            <span className="text-xs text-zinc-500">{new Date(localComment.createdAt || Date.now()).toLocaleDateString()}</span>
+                        </div>
+                        <div className="text-sm text-zinc-300 whitespace-pre-line break-all leading-relaxed bg-zinc-900/50 p-3 rounded-lg rounded-tl-none border border-white/5">
+                            {localComment.content}
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex items-center gap-4 mt-2">
+                            {user && (
+                                <button
+                                    onClick={() => setReplyingTo(isReplying ? null : localComment.id)}
+                                    className="text-xs font-bold text-zinc-500 hover:text-orange-400 transition-colors flex items-center gap-1"
+                                >
+                                    <MessageSquare className="w-3 h-3" />
+                                    Reply
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Reply Form */}
+                        {isReplying && (
+                            <form onSubmit={submitReply} className="mt-3 animate-in fade-in slide-in-from-top-1">
+                                <textarea
+                                    className="block w-full p-3 border border-white/10 rounded-xl text-white placeholder-zinc-500 bg-zinc-900/50 focus:outline-hidden focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500 text-sm min-h-[80px]"
+                                    placeholder={`Replying to ${localComment.username}...`}
+                                    value={replyContent}
+                                    onChange={(e) => setReplyContent(e.target.value)}
+                                    autoFocus
+                                />
+                                <div className="flex justify-end mt-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setReplyingTo(null)}
+                                        className="px-3 py-1.5 rounded-full text-xs font-bold text-zinc-400 hover:text-white"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!replyContent.trim()}
+                                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors disabled:opacity-50"
+                                    >
+                                        Reply
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </div>
+
+                {/* Render Replies Recursively */}
+                {
+                    localComment.replies && localComment.replies.length > 0 && (
+                        <div className="flex flex-col gap-4 mt-2">
+                            {localComment.replies.map(reply => (
+                                <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
+                            ))}
+                        </div>
+                    )
+                }
+            </div >
+        );
     };
 
     if (loading) {
@@ -180,22 +362,7 @@ export default function PostDetail() {
                             ) : (
                                 <>
                                     {comments.map((comment) => (
-                                        <div key={comment.id} className="flex gap-3 group">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 text-xs font-bold shrink-0 shadow-inner">
-                                                {comment.username ? comment.username[0].toUpperCase() : 'U'}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-sm font-bold text-white">
-                                                        {comment.username || 'User'}
-                                                    </span>
-                                                    <span className="text-xs text-zinc-500">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
-                                                </div>
-                                                <div className="text-sm text-zinc-300 whitespace-pre-line break-all leading-relaxed bg-zinc-900/50 p-3 rounded-lg rounded-tl-none border border-white/5">
-                                                    {comment.content}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <CommentItem key={comment.id} comment={comment} />
                                     ))}
 
                                     {/* Pagination Controls */}

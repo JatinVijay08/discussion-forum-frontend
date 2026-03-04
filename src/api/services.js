@@ -16,9 +16,10 @@ export const postService = {
 export const commentService = {
     getCommentsByPostId: (postId, page = 0, size = 10) =>
         api.get(`/comments/post/${postId}?page=${page}&size=${size}`).then(res => res.data),
-    addComment: (postId, content) =>
-        api.post(`/comments/post/${postId}`, { content }).then(res => res.data),
+    addComment: (postId, content, parentId = null) =>
+        api.post(`/comments/post/${postId}`, { content, parentId }).then(res => res.data),
     deleteComment: (commentId) => api.delete(`/comments/${commentId}`),
+    voteOnComment: (commentId, voteType) => api.post(`/comments/${commentId}/votes`, { voteType }).then(res => res.data),
 };
 
 export const userService = {

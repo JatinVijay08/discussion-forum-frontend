@@ -24,43 +24,35 @@ export default function Navbar() {
   }, []);
 
   const navBackground = isScrolled
-    ? 'bg-zinc-950/80 backdrop-blur-md border-b border-white/5 shadow-lg'
-    : 'bg-transparent';
+    ? 'bg-surface/90 backdrop-blur-sm border-b border-border-subtle shadow-none'
+    : 'bg-surface border-b border-border-subtle';
 
   return (
-    <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out ${navBackground}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-20">
+    <nav className={`fixed top-0 inset-x-0 z-50 h-[48px] transition-all duration-300 ease-in-out ${navBackground}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
 
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative flex items-center justify-center">
-                <div className="absolute inset-0 bg-orange-500/20 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
-                <div className="relative w-10 h-10 bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
-                  <span className="text-orange-500 font-bold text-xl font-display">F</span>
-                </div>
-              </div>
-              <span className="text-xl font-bold hidden sm:block text-zinc-200 tracking-tight group-hover:text-white transition-colors">
-                Forum
+            <Link to="/" className="flex items-center gap-2 group">
+              <span className="text-[15px] font-semibold text-accent tracking-tight transition-colors">
+                Nexus
               </span>
             </Link>
           </div>
 
           {/* Search Bar - Conditional Rendering */}
           {!hideSearch && (
-            <div className="hidden md:flex flex-1 max-w-xl mx-8 transform transition-all duration-300">
-              <div className="relative w-full group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-zinc-500 group-focus-within:text-orange-500 transition-colors duration-300" />
+            <div className="hidden md:flex flex-1 justify-center mx-8">
+              <div className="relative w-full max-w-[480px]">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-[14px] w-[14px] text-text-muted transition-colors duration-300" />
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-11 pr-4 py-2.5 bg-zinc-900/50 border border-white/5 rounded-full leading-5 text-zinc-300 placeholder-zinc-500 
-                           focus:outline-none focus:bg-zinc-900 focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500/50 
-                           hover:bg-zinc-900/80 hover:border-white/10
-                           transition-all duration-300 ease-out sm:text-sm shadow-inner"
+                  className="block w-full pl-9 pr-4 py-1.5 bg-bg-base border border-[rgba(255,255,255,0.1)] rounded-[20px] text-[13px] text-text-primary placeholder-text-muted 
+                           focus:outline-none focus:border-accent
+                           hover:border-[rgba(255,255,255,0.2)] transition-all duration-300"
                   placeholder="Search discussions..."
                 />
               </div>
@@ -68,51 +60,51 @@ export default function Navbar() {
           )}
 
           {/* Desktop Right Actions */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
                 <Link
                   to="/create"
-                  className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 group"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-text-muted hover:text-text-primary hover:bg-bg-elevated rounded-md transition-all duration-200"
                 >
-                  <PenSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  <span className="font-medium text-sm">Create</span>
+                  <PenSquare className="w-[14px] h-[14px]" />
+                  <span className="font-medium text-[12px]">Create</span>
                 </Link>
 
-                <div className="h-5 w-px bg-white/10 mx-1"></div>
+                <div className="h-4 w-px bg-border-subtle mx-1"></div>
 
                 <Link
                   to="/profile"
-                  className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full border border-white/5 bg-zinc-900/50 hover:bg-zinc-800 transition-all duration-300 group cursor-pointer hover:shadow-lg hover:border-orange-500/30 hover:shadow-orange-500/10 hover:scale-105"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-bg-elevated transition-all duration-200 cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-orange-900/20 group-hover:from-orange-400 group-hover:to-amber-500">
+                  <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-white font-medium text-[11px]">
                     {user.username.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-medium text-sm text-zinc-300 group-hover:text-white transition-colors">{user.username}</span>
+                  <span className="font-medium text-[12px] text-text-primary">{user.username}</span>
                 </Link>
 
                 <button
                   onClick={logout}
-                  className="p-2.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all duration-200"
+                  className="p-1.5 text-text-muted hover:text-red-400 hover:bg-bg-elevated rounded-md transition-all duration-200"
                   title="Log Out"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-[14px] h-[14px]" />
                 </button>
               </>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="px-5 py-2.5 text-zinc-400 hover:text-white font-medium text-sm transition-colors"
+                  className="text-text-muted hover:text-text-primary font-medium text-[12px] px-2 transition-colors"
                 >
                   Log In
                 </Link>
 
                 <Link
                   to="/register"
-                  className="relative px-6 py-2.5 bg-zinc-100 text-black rounded-full font-bold text-sm hover:bg-white transition-all transform hover:-translate-y-0.5 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] overflow-hidden group"
+                  className="bg-accent text-white rounded-[6px] font-medium text-[12px] px-[16px] py-[6px] hover:bg-accent-light transition-colors"
                 >
-                  <span className="relative z-10">Sign Up</span>
+                  Sign in
                 </Link>
               </>
             )}

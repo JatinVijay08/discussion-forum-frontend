@@ -40,32 +40,32 @@ export default function Home() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto pt-24 pb-6 px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-6 justify-center">
+        <div className="mx-auto pt-20 pb-6 px-4 flex justify-center w-full">
+            <div className="flex gap-3 justify-center w-full max-w-[860px]">
                 {/* Main Feed */}
-                <div className="w-full lg:w-2/3">
+                <div className="flex-1 min-w-0">
                     {/* Filters */}
-                    <div className="flex items-center gap-4 bg-black/20 p-4 rounded-xl border border-white/10 mb-6 overflow-x-auto shadow-xs transition-colors duration-300">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-orange-900/20 text-orange-400 rounded-full font-bold text-sm transition-colors border border-orange-500/20">
-                            <Flame className="w-4 h-4" />
+                    <div className="flex items-center gap-4 mb-4 overflow-x-auto">
+                        <button className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(16,185,129,0.15)] text-accent-green rounded-[4px] font-medium text-[12px] transition-colors">
+                            <Flame className="w-3.5 h-3.5" />
                             Hot
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:bg-white/10 rounded-full font-bold text-sm transition-colors">
-                            <TrendingUp className="w-4 h-4" />
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-text-muted hover:bg-bg-elevated hover:text-text-primary rounded-[4px] font-medium text-[12px] transition-colors">
+                            <TrendingUp className="w-3.5 h-3.5" />
                             Top
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:bg-white/10 rounded-full font-bold text-sm transition-colors">
-                            <Clock className="w-4 h-4" />
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-text-muted hover:bg-bg-elevated hover:text-text-primary rounded-[4px] font-medium text-[12px] transition-colors">
+                            <Clock className="w-3.5 h-3.5" />
                             New
                         </button>
                     </div>
 
                     {/* Posts */}
-                    <div className="space-y-4">
-                        {error && <div className="text-center text-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-md">{error}</div>}
+                    <div className="space-y-3">
+                        {error && <div className="text-center text-red-500 bg-red-500/10 p-4 rounded-[12px]">{error}</div>}
 
                         {posts.length === 0 && !error ? (
-                            <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+                            <div className="text-center text-text-muted py-10">
                                 No posts found. Be the first to create one!
                             </div>
                         ) : (
@@ -77,34 +77,43 @@ export default function Home() {
                 </div>
 
                 {/* Sidebar (Desktop only) */}
-                <div className="hidden lg:block w-1/3 space-y-4">
-                    {/* Premium Card */}
-                    <div className="bg-black/20 p-5 rounded-xl border border-white/10 shadow-sm transition-colors duration-300">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="p-1.5 bg-orange-900/30 rounded-lg">
-                                <Star className="w-5 h-5 text-orange-500 fill-current" />
-                            </div>
-                            <h3 className="font-bold text-white text-base">Forum Premium</h3>
+                <div className="hidden lg:block w-[220px] shrink-0">
+                    {/* Widget */}
+                    <div className="bg-surface p-[14px] rounded-[10px] border-[0.5px] border-border-subtle transition-colors duration-300">
+                        <h3 className="font-semibold text-text-primary text-[12px] mb-[10px]">
+                            Community Info
+                        </h3>
+                        
+                        <div className="flex justify-between items-center text-[12px] text-text-secondary py-[12px] border-t border-[rgba(255,255,255,0.05)]">
+                            <span>Members</span>
+                            <span className="text-accent-light">14.2k</span>
                         </div>
-                        <p className="text-sm text-zinc-400 mb-4 leading-relaxed">The best experience, with monthly coins, exclusive features, and more.</p>
-                        <button className="w-full py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold rounded-full text-sm transition-all shadow-md shadow-orange-500/20">
-                            Try Now
+                        <div className="flex justify-between items-center text-[12px] text-text-secondary py-[12px] border-t border-[rgba(255,255,255,0.05)]">
+                            <span>Online</span>
+                            <span className="text-accent-light flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-accent-green"></span>
+                                245
+                            </span>
+                        </div>
+                        
+                        <button onClick={() => window.location.href = '/create'} className="w-full mt-[10px] py-[8px] bg-accent hover:bg-accent-light text-white font-medium rounded-[6px] text-[13px] transition-all cursor-pointer">
+                            New Post
                         </button>
                     </div>
 
                     {/* Footer Links Style */}
-                    <div className="text-xs text-gray-400 dark:text-gray-500 px-2">
-                        <div className="flex flex-wrap gap-2 mb-2">
-                            <span className="cursor-pointer hover:underline">About</span>
-                            <span className="cursor-pointer hover:underline">Careers</span>
-                            <span className="cursor-pointer hover:underline">Press</span>
+                    <div className="text-[11px] text-text-muted px-2 mt-4 space-y-1.5">
+                        <div className="flex flex-wrap gap-2">
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">About</span>
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">Careers</span>
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">Press</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <span className="cursor-pointer hover:underline">Terms</span>
-                            <span className="cursor-pointer hover:underline">Privacy</span>
-                            <span className="cursor-pointer hover:underline">Policy</span>
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">Terms</span>
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">Privacy</span>
+                            <span className="cursor-pointer hover:underline hover:text-text-primary">Policy</span>
                         </div>
-                        <p className="mt-4">© 2026 Forum Inc. All rights reserved.</p>
+                        <p className="mt-2 text-[10px]">© 2026 Nexus Inc. All rights reserved.</p>
                     </div>
                 </div>
             </div>

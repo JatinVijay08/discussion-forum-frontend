@@ -22,15 +22,15 @@ export default function CreatePost() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto pt-24 pb-8 px-4 sm:px-6 lg:px-8">
-            <div className="border-b border-white/10 pb-4 mb-6">
-                <h1 className="text-xl font-bold text-white">Create a post</h1>
+        <div className="max-w-[740px] mx-auto pt-20 pb-8 px-4">
+            <div className="border-b border-[0.5px] border-border-subtle pb-4 mb-6">
+                <h1 className="text-[20px] font-semibold text-text-primary">Create a post</h1>
             </div>
 
-            <div className="bg-black/20 rounded-xl border border-white/10 shadow-sm overflow-hidden transition-colors duration-300">
+            <div className="bg-surface rounded-[12px] border-[0.5px] border-border-subtle shadow-none overflow-hidden transition-colors duration-300">
                 {/* Tabs */}
-                <div className="flex border-b border-white/10">
-                    <button className="flex-1 py-3 text-center text-sm font-bold text-orange-600 border-b-2 border-orange-600 bg-transparent">
+                <div className="flex border-b-[0.5px] border-border-subtle">
+                    <button className="flex-1 py-3 text-center text-[14px] font-medium text-text-primary border-b-2 border-accent bg-transparent cursor-default">
                         Post
                     </button>
                 </div>
@@ -41,29 +41,29 @@ export default function CreatePost() {
                         <div className="relative">
                             <input
                                 type="text"
-                                className="block w-full px-4 py-3 border border-white/10 rounded-lg text-white placeholder-zinc-500 bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm transition-all shadow-xs cursor-text"
+                                className="block w-full px-4 py-2.5 border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-bg-base/50 focus:outline-none focus:border-accent text-[14px] transition-all shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
                                 placeholder="Title"
                                 maxLength={300}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                             />
-                            <div className="absolute right-3 top-3.5 text-xs text-zinc-500 font-mono">{title.length}/300</div>
+                            <div className="absolute right-3 top-2.5 text-[12px] text-text-muted font-mono">{title.length}/300</div>
                         </div>
 
                         <div className="relative">
                             <textarea
                                 rows={8}
-                                className="block w-full px-4 py-3 border border-white/10 rounded-lg text-white placeholder-zinc-500 bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500 focus:border-transparent sm:text-sm resize-none transition-all shadow-xs cursor-text"
+                                className="block w-full px-4 py-3 border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-bg-base/50 focus:outline-none focus:border-accent text-[14px] resize-none transition-all shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
                                 placeholder="Text (optional)"
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                             />
                         </div>
 
-                        <div className="flex justify-end pt-4 border-t border-white/10">
+                        <div className="flex justify-end pt-4 border-t-[0.5px] border-border-subtle">
                             <button
                                 type="submit"
-                                className={`px-8 py-2.5 rounded-full font-bold text-white transition-all transform hover:-translate-y-0.5 shadow-md ${title ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20 cursor-pointer' : 'bg-zinc-800 cursor-not-allowed'}`}
+                                className={`px-6 py-[8px] rounded-[6px] font-medium text-[13px] text-white transition-all transform active:scale-95 shadow-none ${title ? 'bg-accent hover:bg-accent-light cursor-pointer' : 'bg-surface border border-[0.5px] border-border-subtle text-text-muted cursor-not-allowed'}`}
                                 disabled={!title}
                             >
                                 Post
@@ -73,12 +73,12 @@ export default function CreatePost() {
                 </div>
             </div>
 
-            <div className="mt-8">
-                <div className="bg-white dark:bg-zinc-900 p-5 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm transition-colors duration-300">
-                    <h3 className="font-bold text-gray-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
+            <div className="mt-6">
+                <div className="bg-surface p-5 rounded-[12px] border-[0.5px] border-border-subtle shadow-none transition-colors duration-300">
+                    <h3 className="font-semibold text-[14px] text-text-primary mb-3 flex items-center gap-2">
                         Posting Rules
                     </h3>
-                    <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-zinc-400 space-y-2 leading-relaxed">
+                    <ol className="list-decimal list-inside text-[13px] text-text-secondary space-y-2 leading-relaxed">
                         <li>Remember the human</li>
                         <li>Behave like you would in real life</li>
                         <li>Look for the original source of content</li>

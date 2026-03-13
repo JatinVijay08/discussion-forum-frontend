@@ -135,6 +135,7 @@ export default function PostDetail() {
         };
 
         const [localComment, setLocalComment] = useState(comment);
+        const [isCollapsed, setIsCollapsed] = useState(false);
 
         useEffect(() => {
             setLocalComment(comment);
@@ -171,96 +172,113 @@ export default function PostDetail() {
         };
 
         return (
-            <div className={`flex flex-col gap-3 group ${depth > 0 ? 'ml-8 md:ml-12 border-l-2 border-white/5 pl-4' : ''}`}>
-                <div className="flex gap-3">
-                    {/* Vote Sidebar for Comment */}
-                    <div className="flex flex-col items-center pt-1 w-8 shrink-0">
-                        <button
-                            onClick={(e) => handleVote(e, 'upvote')}
-                            className={`p-1 rounded-full transition-colors cursor-pointer ${localComment.voteType === 'upvote' ? 'text-orange-500 bg-orange-500/10' : 'text-zinc-500 hover:bg-zinc-800 hover:text-orange-400'}`}
-                        >
-                            <ArrowBigUp className={`w-5 h-5 ${localComment.voteType === 'upvote' ? 'fill-current' : ''}`} />
-                        </button>
-                        <span className={`text-xs font-bold my-0.5 ${localComment.voteType === 'upvote' ? 'text-orange-500' : localComment.voteType === 'downvote' ? 'text-blue-500' : 'text-zinc-400'}`}>
-                            {localComment.voteCount || 0}
+            <div className={`flex flex-col gap-3 group relative ${depth > 0 ? 'ml-4 border-l-2 border-[rgba(124,58,237,0.2)] pl-4' : ''}`}>
+                {depth > 0 && localComment.replies?.length > 0 && (
+                    <button 
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className="absolute -left-[9px] top-8 w-4 h-4 bg-bg-base border-[0.5px] border-border-subtle rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:border-border-active z-10 transition-colors"
+                    >
+                        {isCollapsed ? '+' : '-'}
+                    </button>
+                )}
+                
+                {isCollapsed ? (
+                    <div className="flex gap-2 items-center py-1 cursor-pointer" onClick={() => setIsCollapsed(false)}>
+                        <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-white text-[10px] font-bold">
+                            {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
+                        </div>
+                        <span className="text-[13px] font-medium text-text-muted hover:text-text-primary transition-colors">
+                            u/{localComment.username} · {localComment.replies?.length || 0} child comments
                         </span>
-                        <button
-                            onClick={(e) => handleVote(e, 'downvote')}
-                            className={`p-1 rounded-full transition-colors cursor-pointer ${localComment.voteType === 'downvote' ? 'text-blue-500 bg-blue-500/10' : 'text-zinc-500 hover:bg-zinc-800 hover:text-blue-400'}`}
-                        >
-                            <ArrowBigDown className={`w-5 h-5 ${localComment.voteType === 'downvote' ? 'fill-current' : ''}`} />
-                        </button>
                     </div>
-
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-600 flex items-center justify-center text-zinc-300 text-[10px] font-bold shadow-inner">
-                                {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
-                            </div>
-                            <span className="text-sm font-bold text-white">
-                                {localComment.username || 'User'}
+                ) : (
+                    <div className="flex gap-3">
+                        {/* Vote Column for Comment */}
+                        <div className="flex flex-col items-center pt-1 min-w-[32px] w-[32px] shrink-0">
+                            <button
+                                onClick={(e) => handleVote(e, 'upvote')}
+                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] upvote-bounce cursor-pointer ${localComment.voteType === 'upvote' ? 'bg-accent text-white' : 'bg-elevated text-text-muted hover:text-accent'}`}
+                            >
+                                <ArrowBigUp className={`w-4 h-4 ${localComment.voteType === 'upvote' ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className={`text-[12px] font-semibold my-1 ${localComment.voteType === 'upvote' ? 'text-accent-light' : localComment.voteType === 'downvote' ? 'text-text-muted' : 'text-accent-light'}`}>
+                                {localComment.voteCount || 0}
                             </span>
-                            <span className="text-xs text-zinc-500">{new Date(localComment.createdAt || Date.now()).toLocaleDateString()}</span>
-                        </div>
-                        <div className="text-sm text-zinc-300 whitespace-pre-line break-all leading-relaxed bg-zinc-900/50 p-3 rounded-lg rounded-tl-none border border-white/5">
-                            {localComment.content}
-                        </div>
-
-                        {/* Action Bar */}
-                        <div className="flex items-center gap-4 mt-2">
-                            {user && (
-                                <button
-                                    onClick={() => setReplyingTo(isReplying ? null : localComment.id)}
-                                    className="text-xs font-bold text-zinc-500 hover:text-orange-400 transition-colors flex items-center gap-1"
-                                >
-                                    <MessageSquare className="w-3 h-3" />
-                                    Reply
-                                </button>
-                            )}
+                            <button
+                                onClick={(e) => handleVote(e, 'downvote')}
+                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] cursor-pointer ${localComment.voteType === 'downvote' ? 'bg-elevated text-accent' : 'bg-elevated text-text-muted hover:text-accent-light'}`}
+                            >
+                                <ArrowBigDown className={`w-4 h-4 ${localComment.voteType === 'downvote' ? 'fill-current' : ''}`} />
+                            </button>
                         </div>
 
-                        {/* Reply Form */}
-                        {isReplying && (
-                            <form onSubmit={submitReply} className="mt-3 animate-in fade-in slide-in-from-top-1">
-                                <textarea
-                                    className="block w-full p-3 border border-white/10 rounded-xl text-white placeholder-zinc-500 bg-zinc-900/50 focus:outline-hidden focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500 text-sm min-h-[80px]"
-                                    placeholder={`Replying to ${localComment.username}...`}
-                                    value={replyContent}
-                                    onChange={(e) => setReplyContent(e.target.value)}
-                                    autoFocus
-                                />
-                                <div className="flex justify-end mt-2 gap-2">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1 text-[11px] text-text-muted flex-wrap">
+                                <div className="w-4 h-4 rounded-full bg-accent flex items-center justify-center text-white text-[8px] font-bold">
+                                    {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
+                                </div>
+                                <span className="font-medium text-text-primary">
+                                    u/{localComment.username || 'User'}
+                                </span>
+                                <span>• {new Date(localComment.createdAt || Date.now()).toLocaleDateString()}</span>
+                            </div>
+                            <div className="text-[14px] text-text-secondary whitespace-pre-line break-all leading-[1.4] py-1 bg-elevated border-[0.5px] border-border-subtle rounded-[8px] p-[10px]">
+                                {localComment.content}
+                            </div>
+
+                            {/* Action Bar */}
+                            <div className="flex items-center mt-2">
+                                {user && (
                                     <button
-                                        type="button"
-                                        onClick={() => setReplyingTo(null)}
-                                        className="px-3 py-1.5 rounded-full text-xs font-bold text-zinc-400 hover:text-white"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={!replyContent.trim()}
-                                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors disabled:opacity-50"
+                                        onClick={() => setReplyingTo(isReplying ? null : localComment.id)}
+                                        className="text-[11px] font-medium text-accent-light hover:text-accent transition-colors flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
                                     >
                                         Reply
                                     </button>
-                                </div>
-                            </form>
-                        )}
+                                )}
+                            </div>
+
+                            {/* Reply Form */}
+                            {isReplying && (
+                                <form onSubmit={submitReply} className="mt-3">
+                                    <textarea
+                                        className="block w-full p-3 border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-elevated focus:outline-none focus:border-accent text-[14px] min-h-[80px] resize-y hover:border-[rgba(255,255,255,0.2)] transition-all shadow-none"
+                                        placeholder={`Replying to ${localComment.username}...`}
+                                        value={replyContent}
+                                        onChange={(e) => setReplyContent(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <div className="flex justify-end mt-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setReplyingTo(null)}
+                                            className="px-3 py-1.5 rounded-full text-[12px] font-medium text-text-muted hover:text-text-primary cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={!replyContent.trim()}
+                                            className="bg-accent hover:bg-accent-light text-white px-4 py-1.5 rounded-[6px] text-[12px] font-medium transition-all disabled:opacity-50 cursor-pointer"
+                                        >
+                                            Reply
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Render Replies Recursively */}
-                {
-                    localComment.replies && localComment.replies.length > 0 && (
-                        <div className="flex flex-col gap-4 mt-2">
-                            {localComment.replies.map(reply => (
-                                <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
-                            ))}
-                        </div>
-                    )
-                }
-            </div >
+                {!isCollapsed && localComment.replies?.length > 0 && (
+                    <div className="flex flex-col gap-4 mt-1">
+                        {localComment.replies.map(reply => (
+                            <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
+                        ))}
+                    </div>
+                )}
+            </div>
         );
     };
 
@@ -277,14 +295,14 @@ export default function PostDetail() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto pt-24 pb-6 px-4">
+        <div className="max-w-[740px] mx-auto pt-24 pb-6 px-4">
             <button
                 onClick={() => navigate('/')}
-                className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
+                className="flex items-center gap-2 text-text-muted hover:text-text-main hover:bg-border-subtle p-2 rounded-full mb-4 transition-colors w-max"
                 aria-label="Back to feed"
             >
                 <ArrowLeft className="w-4 h-4" />
-                Back to Feed
+                <span className="text-[13px] font-medium pr-1">Back to Feed</span>
             </button>
 
             {/* Post */}
@@ -292,9 +310,9 @@ export default function PostDetail() {
 
             {/* Comments Section */}
             {showComments && (
-                <div className="bg-black/20 rounded-xl border border-white/10 mt-6 p-4 md:p-6 shadow-sm transition-colors duration-300">
-                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <span className="bg-orange-900/30 text-orange-400 text-xs px-2 py-1 rounded-full">{comments.length}</span>
+                <div className="w-full mt-6">
+                    <h3 className="text-[15px] font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <span className="bg-[rgba(124,58,237,0.2)] text-accent-light text-[10px] px-2.5 py-1 rounded-[20px] font-semibold">{comments.length}</span>
                         Comments
                     </h3>
 
@@ -304,7 +322,7 @@ export default function PostDetail() {
                             {!showAddCommentForm ? (
                                 <button
                                     onClick={() => setShowAddCommentForm(true)}
-                                    className="flex items-center gap-2 text-white font-bold bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-full transition-colors text-sm cursor-pointer"
+                                    className="flex items-center gap-2 text-text-secondary font-medium bg-elevated border-[0.5px] border-border-subtle hover:border-[rgba(255,255,255,0.2)] hover:text-text-primary px-4 py-2 rounded-[8px] transition-colors text-[13px] cursor-pointer shadow-none"
                                 >
                                     <MessageSquare className="w-4 h-4" />
                                     Write a Comment
@@ -313,7 +331,7 @@ export default function PostDetail() {
                                 <form onSubmit={handleCommentSubmit} className="animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="relative">
                                         <textarea
-                                            className="block w-full p-4 border border-white/10 rounded-xl text-white placeholder-zinc-500 bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 focus:bg-black sm:text-sm resize-y min-h-[100px] transition-all cursor-text"
+                                            className="block w-full p-[10px] border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-elevated focus:outline-none focus:border-accent text-[14px] resize-y min-h-[100px] transition-all cursor-text hover:border-[rgba(255,255,255,0.2)]"
                                             placeholder="What are your thoughts?"
                                             value={newComment}
                                             onChange={(e) => setNewComment(e.target.value)}
@@ -324,16 +342,16 @@ export default function PostDetail() {
                                         <button
                                             type="button"
                                             onClick={() => setShowAddCommentForm(false)}
-                                            className="px-4 py-2 rounded-full font-bold text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                                            className="px-4 py-2 rounded-[6px] font-medium text-[12px] text-text-muted hover:text-text-primary cursor-pointer"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={!newComment.trim()}
-                                            className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm text-white transition-all transform hover:-translate-y-0.5 shadow-md ${newComment.trim() ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/20 cursor-pointer' : 'bg-zinc-800 cursor-not-allowed'}`}
+                                            className={`flex items-center gap-2 px-6 py-2 rounded-[6px] font-medium text-[12px] text-white transition-all shadow-none ${newComment.trim() ? 'bg-accent hover:bg-accent-light cursor-pointer' : 'bg-elevated border border-border-subtle text-text-muted cursor-not-allowed'}`}
                                         >
-                                            <Send className="w-4 h-4" />
+                                            <Send className="w-3.5 h-3.5" />
                                             Post
                                         </button>
                                     </div>
@@ -341,11 +359,11 @@ export default function PostDetail() {
                             )}
                         </div>
                     ) : (
-                        <div className="bg-zinc-900/50 p-6 rounded-xl text-center mb-8 border border-white/10 border-dashed">
-                            <p className="text-zinc-400 text-sm font-medium mb-3">Log in or sign up to join the discussion</p>
+                        <div className="bg-elevated p-6 rounded-[8px] text-center mb-8 border border-border-subtle border-dashed">
+                            <p className="text-text-primary text-[14px] font-medium mb-4">Log in or sign up to join the discussion</p>
                             <div className="flex gap-3 justify-center">
-                                <button onClick={() => navigate('/login')} className="text-white bg-orange-600 hover:bg-orange-700 px-4 py-1.5 rounded-full font-bold text-sm transition-colors">Log In</button>
-                                <button onClick={() => navigate('/register')} className="text-orange-400 border border-orange-400 hover:bg-orange-900/10 px-4 py-1.5 rounded-full font-bold text-sm transition-colors">Sign Up</button>
+                                <button onClick={() => navigate('/login')} className="text-text-primary border border-border-subtle hover:bg-surface px-5 py-2 rounded-[6px] font-medium text-[12px] transition-colors cursor-pointer">Log In</button>
+                                <button onClick={() => navigate('/register')} className="text-white bg-accent hover:bg-accent-light px-5 py-2 rounded-[6px] font-medium text-[12px] transition-colors cursor-pointer">Sign Up</button>
                             </div>
                         </div>
                     )}
@@ -365,20 +383,19 @@ export default function PostDetail() {
                                         <CommentItem key={comment.id} comment={comment} />
                                     ))}
 
-                                    {/* Pagination Controls */}
+                                     {/* Pagination Controls */}
                                     {totalPages > 1 && (
-                                        <div className="flex justify-center items-center gap-2 mt-8 pt-4 border-t border-white/5">
+                                        <div className="flex justify-center items-center gap-2 mt-8 pt-4 border-t border-border-subtle">
                                             <button
                                                 onClick={() => handlePageChange(currentPage - 1)}
                                                 disabled={currentPage === 0}
-                                                className="px-3 py-1 text-xs font-bold rounded-md bg-zinc-800 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-700 hover:text-white transition-colors"
+                                                className="px-3 py-1.5 text-[13px] font-medium rounded-md text-text-muted disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border-subtle hover:text-text-main transition-colors cursor-pointer"
                                             >
                                                 Previous
                                             </button>
 
                                             <div className="flex gap-1">
                                                 {[...Array(totalPages)].map((_, index) => {
-                                                    // Show limited page numbers if there are too many
                                                     if (
                                                         index === 0 ||
                                                         index === totalPages - 1 ||
@@ -388,9 +405,9 @@ export default function PostDetail() {
                                                             <button
                                                                 key={index}
                                                                 onClick={() => handlePageChange(index)}
-                                                                className={`w-7 h-7 flex items-center justify-center text-xs font-bold rounded-md transition-all ${currentPage === index
-                                                                    ? 'bg-orange-600 text-white shadow-md shadow-orange-900/20'
-                                                                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                                                className={`min-w-[32px] h-[32px] flex items-center justify-center text-[13px] font-medium rounded-md transition-all cursor-pointer ${currentPage === index
+                                                                    ? 'bg-accent/10 border border-accent text-accent'
+                                                                    : 'text-text-muted hover:bg-border-subtle hover:text-text-main'
                                                                     }`}
                                                             >
                                                                 {index + 1}
@@ -400,7 +417,7 @@ export default function PostDetail() {
                                                         index === currentPage - 2 ||
                                                         index === currentPage + 2
                                                     ) {
-                                                        return <span key={index} className="text-zinc-600 text-xs self-end pb-1">...</span>;
+                                                        return <span key={index} className="text-text-muted text-[13px] self-end pb-1 px-1">...</span>;
                                                     }
                                                     return null;
                                                 })}
@@ -409,7 +426,7 @@ export default function PostDetail() {
                                             <button
                                                 onClick={() => handlePageChange(currentPage + 1)}
                                                 disabled={currentPage === totalPages - 1}
-                                                className="px-3 py-1 text-xs font-bold rounded-md bg-zinc-800 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-700 hover:text-white transition-colors"
+                                                className="px-3 py-1.5 text-[13px] font-medium rounded-md text-text-muted disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border-subtle hover:text-text-main transition-colors cursor-pointer"
                                             >
                                                 Next
                                             </button>

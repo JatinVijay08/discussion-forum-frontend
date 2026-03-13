@@ -13,14 +13,7 @@ function App() {
     <div className="min-h-screen bg-[#111211] font-sans text-white transition-colors duration-300">
       <Navbar />
       <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -39,14 +32,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/post/:id"
-          element={
-            <ProtectedRoute>
-              <PostDetail />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/post/:id" element={<PostDetail />} />
       </Routes>
     </div>
   );

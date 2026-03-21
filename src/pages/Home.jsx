@@ -45,17 +45,17 @@ export default function Home() {
                 {/* Main Feed */}
                 <div className="flex-1 min-w-0">
                     {/* Filters */}
-                    <div className="flex items-center gap-4 mb-4 overflow-x-auto">
-                        <button className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(16,185,129,0.15)] text-accent-green rounded-[4px] font-medium text-[12px] transition-colors">
-                            <Flame className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-3 mb-6 overflow-x-auto">
+                        <button className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-full font-semibold text-[13px] border border-white/20 transition-all hover:bg-white/20 cursor-pointer shadow-sm">
+                            <Flame className="w-4 h-4 text-orange-400" />
                             Hot
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-text-muted hover:bg-bg-elevated hover:text-text-primary rounded-[4px] font-medium text-[12px] transition-colors">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            Top
+                        <button className="flex items-center gap-2 px-4 py-2 bg-transparent text-slate-400 hover:text-white hover:bg-white/5 rounded-full border border-transparent font-medium text-[13px] transition-all cursor-pointer">
+                            <TrendingUp className="w-4 h-4" />
+                            Trending
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-text-muted hover:bg-bg-elevated hover:text-text-primary rounded-[4px] font-medium text-[12px] transition-colors">
-                            <Clock className="w-3.5 h-3.5" />
+                        <button className="flex items-center gap-2 px-4 py-2 bg-transparent text-slate-400 hover:text-white hover:bg-white/5 rounded-full border border-transparent font-medium text-[13px] transition-all cursor-pointer">
+                            <Clock className="w-4 h-4" />
                             New
                         </button>
                     </div>
@@ -77,43 +77,46 @@ export default function Home() {
                 </div>
 
                 {/* Sidebar (Desktop only) */}
-                <div className="hidden lg:block w-[220px] shrink-0">
+                <div className="hidden lg:block w-[260px] shrink-0 lg:sticky lg:top-[88px] self-start">
                     {/* Widget */}
-                    <div className="bg-surface p-[14px] rounded-[10px] border-[0.5px] border-border-subtle transition-colors duration-300">
-                        <h3 className="font-semibold text-text-primary text-[12px] mb-[10px]">
-                            Community Info
+                    <div className="glass-panel p-5 rounded-2xl mb-6 transition-colors duration-300">
+                        <h3 className="font-bold text-white text-[16px] mb-2 tracking-wide">
+                            PURE DISCOURSE
                         </h3>
+                        <p className="text-[13px] text-slate-400 mb-5 leading-relaxed">
+                            Join the world's most refined social collective. Minimalist design, maximalist impact.
+                        </p>
                         
-                        <div className="flex justify-between items-center text-[12px] text-text-secondary py-[12px] border-t border-[rgba(255,255,255,0.05)]">
-                            <span>Members</span>
-                            <span className="text-accent-light">14.2k</span>
+                        <div className="flex justify-between items-center text-[13px] text-slate-300 py-3 border-t border-white/10">
+                            <span className="font-medium">Members</span>
+                            <span className="text-white font-bold">14.2k</span>
                         </div>
-                        <div className="flex justify-between items-center text-[12px] text-text-secondary py-[12px] border-t border-[rgba(255,255,255,0.05)]">
-                            <span>Online</span>
-                            <span className="text-accent-light flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-accent-green"></span>
+                        <div className="flex justify-between items-center text-[13px] text-slate-300 py-3 border-t border-white/10">
+                            <span className="font-medium">Online</span>
+                            <span className="text-white font-bold flex items-center gap-2">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
                                 245
                             </span>
                         </div>
                         
-                        <button onClick={() => window.location.href = '/create'} className="w-full mt-[10px] py-[8px] bg-accent hover:bg-accent-light text-white font-medium rounded-[6px] text-[13px] transition-all cursor-pointer">
-                            New Post
+                        <button onClick={() => window.location.href = '/create'} className="w-full mt-3 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold rounded-xl text-[14px] shadow-lg shadow-accent/20 transition-all cursor-pointer">
+                            Create Community
                         </button>
                     </div>
 
                     {/* Footer Links Style */}
-                    <div className="text-[11px] text-text-muted px-2 mt-4 space-y-1.5">
-                        <div className="flex flex-wrap gap-2">
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">About</span>
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">Careers</span>
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">Press</span>
+                    {/* Footer Links Style */}
+                    <div className="text-[12px] text-slate-500 px-2 mt-4 space-y-2">
+                        <div className="flex flex-wrap gap-4 font-medium">
+                            <span className="cursor-pointer hover:underline hover:text-slate-300 transition-colors">About GlassForum</span>
+                            <span className="cursor-pointer hover:underline hover:text-slate-300 transition-colors">Careers</span>
+                            <span className="cursor-pointer hover:underline hover:text-slate-300 transition-colors">Terms</span>
+                            <span className="cursor-pointer hover:underline hover:text-slate-300 transition-colors">Privacy</span>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">Terms</span>
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">Privacy</span>
-                            <span className="cursor-pointer hover:underline hover:text-text-primary">Policy</span>
-                        </div>
-                        <p className="mt-2 text-[10px]">© 2026 Nexus Inc. All rights reserved.</p>
+                        <p className="mt-4 text-[11px] opacity-75 uppercase tracking-wider">© 2024 GlassForum. All rights reserved.</p>
                     </div>
                 </div>
             </div>

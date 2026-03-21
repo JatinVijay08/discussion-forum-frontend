@@ -3,6 +3,7 @@ import api from './axios';
 export const authService = {
     register: (registerRequest) => api.post('/auth/register', registerRequest),
     login: (loginRequest) => api.post('/auth/login', loginRequest),
+    googleLogin: (idToken) => api.post('/auth/google', { idToken }),
 };
 
 export const postService = {

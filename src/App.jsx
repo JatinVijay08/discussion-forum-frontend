@@ -7,34 +7,39 @@ import CreatePost from './pages/CreatePost';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthModal from './components/AuthModal';
+import { ToastProvider } from './context/ToastContext';
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#111211] font-sans text-white transition-colors duration-300">
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute>
-              <CreatePost />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/post/:id" element={<PostDetail />} />
-      </Routes>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen font-sans text-white transition-colors duration-300">
+        <Navbar />
+        <AuthModal />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create"
+            element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/post/:id" element={<PostDetail />} />
+        </Routes>
+      </div>
+    </ToastProvider>
   );
 }
 

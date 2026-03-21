@@ -2,24 +2,17 @@ import React from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { postService } from '../api/services';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDelete = false, onDelete }) => {
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [post, setPost] = React.useState(initialPost);
 
-    // Update local state if prop changes (e.g. parent refresh)
     React.useEffect(() => {
         setPost(initialPost);
     }, [initialPost]);
 
     const handleVote = async (e, type) => {
         e.stopPropagation();
-        if (!user) {
-            navigate('/login');
-            return;
-        }
         try {
             const updatedPost = await postService.vote(post.id, type);
             setPost(updatedPost);
@@ -37,9 +30,9 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
     return (
         <div
             onClick={goToDetail}
-            className={`flex bg-surface border-[0.5px] border-border-subtle rounded-[10px] p-[14px] ${isDetail ? 'cursor-default' : 'cursor-pointer'} post-card-hover mb-4 group relative ${post.isHot ? 'border-border-active' : ''}`}
+            className={`flex items-stretch glass-panel p-[20px] rounded-2xl gap-4 ${isDetail ? 'cursor-default' : 'cursor-pointer'} hover:bg-white/10 transition-all duration-300 mb-5 group relative ${post.isHot ? 'border-accent/30 shadow-[0_0_15px_rgba(37,99,235,0.15)]' : ''}`}
         >
-            {/* Delete Button (Visible only if showDelete is true) */}
+            {/* Delete Button */}
             {showDelete && (
                 <button
                     onClick={(e) => {
@@ -54,64 +47,66 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
             )}
 
             {/* Vote Column */}
-            <div className="flex flex-col items-center min-w-[32px] w-[32px] shrink-0 mr-3">
+            <div onClick={(e)=>e.stopPropagation() } className="flex flex-col items-center justify-start gap-1 w-[44px] shrink-0 pt-1">
                 <button
                     onClick={(e) => handleVote(e, 'upvote')}
-                    className={`w-6 h-6 flex items-center justify-center rounded-[4px] upvote-bounce cursor-pointer ${post.userVote === 'upvote' ? 'bg-accent text-white' : 'bg-elevated text-text-muted hover:text-accent'}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${post.userVote === 'upvote' ? 'text-accent bg-accent/20' : 'text-slate-500 hover:text-accent hover:bg-accent/10'}`}
                 >
-                    <ArrowBigUp className={`w-4 h-4 ${post.userVote === 'upvote' ? 'fill-current' : ''}`} />
+                    <ArrowBigUp className={`w-6 h-6 ${post.userVote === 'upvote' ? 'fill-current' : ''}`} />
                 </button>
-                <span className={`text-[12px] font-semibold my-1 ${post.userVote === 'upvote' ? 'text-accent-light' : post.userVote === 'downvote' ? 'text-text-muted' : 'text-accent-light'}`}>
+                <span className={`text-[16px] font-bold cursor-default leading-none transition-colors py-1 ${post.userVote === 'upvote' ? 'text-accent' : post.userVote === 'downvote' ? 'text-red-400' : 'text-slate-300'}`}>
                     {post.voteCount || 0}
                 </span>
                 <button
                     onClick={(e) => handleVote(e, 'downvote')}
-                    className={`w-6 h-6 flex items-center justify-center rounded-[4px] cursor-pointer ${post.userVote === 'downvote' ? 'bg-elevated text-accent' : 'bg-elevated text-text-muted hover:text-accent-light'}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${post.userVote === 'downvote' ? 'text-red-400 bg-red-500/20' : 'text-slate-500 hover:text-red-400 hover:bg-red-500/10'}`}
                 >
-                    <ArrowBigDown className={`w-4 h-4 ${post.userVote === 'downvote' ? 'fill-current' : ''}`} />
+                    <ArrowBigDown className={`w-6 h-6 ${post.userVote === 'downvote' ? 'fill-current' : ''}`} />
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 min-w-0">
-                {/* Header (Tag & Meta) */}
-                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    {/* Tag Pill */}
-                    <span className={`px-2 py-[2px] rounded-[20px] text-[10px] font-semibold tag-pill-hover cursor-pointer ${post.isHot ? 'bg-[rgba(16,185,129,0.15)] text-accent-green' : 'bg-[rgba(124,58,237,0.2)] text-accent-light'}`}>
+            <div className="flex-1 min-w-0 flex flex-col justify-between">
+                {/* Header */}
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className={`px-3 py-[3px] rounded-full text-[11px] font-bold tracking-wide uppercase border border-white/10 ${post.isHot ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
                         {post.isHot ? 'Hot' : 'Discussion'}
                     </span>
-                    
-                    {/* Meta Info */}
-                    <span className="text-[11px] text-text-muted truncate">
-                        r/community · posted by u/{post.username || 'user'} · {new Date(post.createdDate || Date.now()).toLocaleDateString()}
+                    <span className="text-[13px] text-slate-400 truncate font-medium">
+                        r/community <span className="text-slate-600 mx-1">•</span> Posted by <span className="text-slate-300">u/{post.username || 'user'}</span> <span className="text-slate-600 mx-1">•</span> {new Date(post.createdDate || Date.now()).toLocaleDateString()}
                     </span>
                 </div>
 
                 {/* Body */}
-                <h3 className="text-[15px] font-semibold text-text-primary mb-1.5 leading-[1.5] hover:text-accent-light transition-colors duration-100">{post.title}</h3>
-                <p className={`text-[14px] text-text-secondary leading-[1.4] mb-3 whitespace-pre-line break-all ${isDetail ? '' : 'line-clamp-3'}`}>{post.content}</p>
+                <h3 className="text-[20px] font-bold text-white mb-2.5 leading-[1.4] hover:text-accent transition-colors duration-200 tracking-tight">
+                    {post.title}
+                </h3>
+                <p className={`text-[15px] text-slate-300 leading-[1.6] mb-5 whitespace-pre-line break-words opacity-90 ${isDetail ? '' : 'line-clamp-3'}`}>
+                    {post.content}
+                </p>
 
-                {/* Footer Chips */}
-                <div className="flex items-center gap-2">
+                {/* Footer */}
+                <div className="flex items-center gap-3 mt-auto">
                     <button
                         onClick={(e) => {
-                            if (onCommentClick) {
-                                e.stopPropagation();
-                                onCommentClick();
-                            }
-                        }}
-                        className="flex items-center gap-1.5 bg-elevated text-text-secondary hover:text-text-primary px-2 py-[3px] rounded-[4px] text-[11px] font-medium transition-colors"
+                             e.stopPropagation();
+        if (onCommentClick) {
+            onCommentClick();
+        } else {
+            navigate(`/post/${post.id}`);
+        }
+    }}
+                        className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 px-4 py-2 rounded-full text-[13px] font-semibold transition-all cursor-pointer shadow-sm disabled:opacity-50"
                     >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>{post.commentCount || 0} comments</span>
+                        <MessageSquare className="w-4 h-4" />
+                        <span>{post.totalCommentCount ?? post.commentCount ?? 0} Comments</span>
                     </button>
-                    <button className="flex items-center gap-1.5 bg-elevated text-text-secondary hover:text-text-primary px-2 py-[3px] rounded-[4px] text-[11px] font-medium transition-colors">
-                        <Share2 className="w-3.5 h-3.5" />
+                    <button className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 px-4 py-2 rounded-full text-[13px] font-semibold transition-all cursor-pointer shadow-sm">
+                        <Share2 className="w-4 h-4" />
                         <span>Share</span>
                     </button>
-                    <button className="flex items-center gap-1.5 bg-elevated text-text-secondary hover:text-text-primary px-2 py-[3px] rounded-[4px] text-[11px] font-medium transition-colors">
-                        <MoreHorizontal className="w-3.5 h-3.5" />
-                        <span>More</span>
+                    <button className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all cursor-pointer shadow-sm h-[38px] w-[38px] justify-center">
+                        <MoreHorizontal className="w-[18px] h-[18px]" />
                     </button>
                 </div>
             </div>

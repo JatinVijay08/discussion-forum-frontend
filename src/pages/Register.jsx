@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -10,14 +12,21 @@ export default function Register() {
         confirmPassword: '',
     });
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSuccess('');
+
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords don't match");
+            window.dispatchEvent(new CustomEvent('app-toast', { 
+                detail: { message: "Passwords don't match", type: 'warning' } 
+            }));
             return;
         }
+
         setLoading(true);
 
         try {
@@ -26,94 +35,94 @@ export default function Register() {
                 email: formData.email,
                 password: formData.password
             });
-            alert('Registration successful! Please login.');
-            navigate('/login');
+            setSuccess('Registration successful! Redirecting...');
+            setTimeout(() => navigate('/login'), 2000);
         } catch (error) {
-            console.error(error);
-            if (error.response) {
-                alert(`Registration failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
-            } else {
-                alert('Registration failed: Network Error or Server Unreachable');
-            }
+            // Error is handled by global interceptor
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-bg-base flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-            <div className="max-w-[400px] w-full space-y-6 bg-surface p-8 sm:p-10 rounded-[16px] border-[0.5px] border-border-subtle shadow-none relative overflow-hidden z-10">
+        <div className="relative h-screen w-full bg-bg-base overflow-hidden flex items-center justify-center pt-16 pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+            <div className="max-w-[420px] w-full space-y-4 glass-panel p-6 sm:p-8 rounded-3xl relative overflow-hidden z-10">
                 <div className="relative">
-                    <div className="mx-auto h-12 w-12 bg-accent/20 rounded-xl flex items-center justify-center shadow-none mb-6">
-                        <span className="text-white font-bold text-2xl font-display">F</span>
-                    </div>
-                    <h2 className="text-center text-[24px] font-semibold text-text-main tracking-tight">
-                        Create an account
+                    <h2 className="text-center text-[32px] font-bold text-white tracking-tight">
+                        Join GlassForum
                     </h2>
-                    <p className="mt-2 text-center text-[14px] text-text-secondary">
-                        Already have an account?{' '}
-                        <Link to="/login" className="font-medium text-text-primary hover:text-accent-light transition-colors underline underline-offset-4">
-                            Log in
-                        </Link>
+                    <p className="mt-2 text-center text-[15px] text-slate-400">
+                        Become part of the crystal clear conversation.
                     </p>
+                    
+                    {/* Tabs */}
+                    <div className="flex border-b border-white/10 mt-4 mb-2">
+                        <Link to="/login" className="w-1/2 text-center py-2 text-slate-400 hover:text-white font-medium text-[15px] transition-colors">
+                            Login
+                        </Link>
+                        <div className="w-1/2 text-center py-2 border-b-2 border-accent text-white font-semibold text-[15px]">
+                            Register
+                        </div>
+                    </div>
                 </div>
-                <form className="mt-6 space-y-5 relative" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
+                <form className="mt-4 space-y-4 relative" onSubmit={handleSubmit}>
+                    {success && (
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-sm text-green-500 text-center animate-in fade-in slide-in-from-top-2">
+                            {success}
+                        </div>
+                    )}
+                    <div className="space-y-3">
                         <div>
-                            <label htmlFor="username" className="block text-[13px] font-medium text-text-secondary mb-1.5 pl-1 shrink-0">
+                            <label htmlFor="username" className="block text-[12px] font-bold text-slate-400 mb-2 pl-1 uppercase tracking-wider">
                                 Username
                             </label>
                             <input
                                 id="username"
                                 name="username"
                                 type="text"
-                                required
-                                className="appearance-none block w-full px-4 py-2.5 border-[0.5px] border-border-subtle placeholder-text-muted text-text-primary rounded-[10px] focus:outline-none focus:border-accent bg-bg-base/50 transition-all text-[14px] shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
+                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner"
                                 placeholder="Display Name"
                                 value={formData.username}
                                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-[13px] font-medium text-text-secondary mb-1.5 pl-1 shrink-0">
-                                Email
+                            <label htmlFor="email" className="block text-[12px] font-bold text-slate-400 mb-2 pl-1 uppercase tracking-wider">
+                                Email Address
                             </label>
                             <input
                                 id="email"
                                 name="email"
                                 type="email"
-                                required
-                                className="appearance-none block w-full px-4 py-2.5 border-[0.5px] border-border-subtle placeholder-text-muted text-text-primary rounded-[10px] focus:outline-none focus:border-accent bg-bg-base/50 transition-all text-[14px] shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
+                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner"
                                 placeholder="name@example.com"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-[13px] font-medium text-text-secondary mb-1.5 pl-1 shrink-0">
+                            <label htmlFor="password" className="block text-[12px] font-bold text-slate-400 mb-2 pl-1 uppercase tracking-wider">
                                 Password
                             </label>
                             <input
                                 id="password"
                                 name="password"
                                 type="password"
-                                required
-                                className="appearance-none block w-full px-4 py-2.5 border-[0.5px] border-border-subtle placeholder-text-muted text-text-primary rounded-[10px] focus:outline-none focus:border-accent bg-bg-base/50 transition-all text-[14px] shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
+                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner font-mono tracking-widest"
                                 placeholder="••••••••"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
                         </div>
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-[13px] font-medium text-text-secondary mb-1.5 pl-1 shrink-0">
+                            <label htmlFor="confirmPassword" className="block text-[12px] font-bold text-slate-400 mb-2 pl-1 uppercase tracking-wider">
                                 Confirm Password
                             </label>
                             <input
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 type="password"
-                                required
-                                className="appearance-none block w-full px-4 py-2.5 border-[0.5px] border-border-subtle placeholder-text-muted text-text-primary rounded-[10px] focus:outline-none focus:border-accent bg-bg-base/50 transition-all text-[14px] shadow-none cursor-text hover:border-[rgba(255,255,255,0.2)]"
+                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner font-mono tracking-widest"
                                 placeholder="••••••••"
                                 value={formData.confirmPassword}
                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -125,40 +134,61 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`group relative w-full flex justify-center py-[10px] px-4 border border-transparent text-[14px] font-medium rounded-[10px] text-white bg-accent hover:bg-accent-light focus:outline-none transition-all active:scale-[0.98] shadow-none cursor-pointer ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`group w-full flex justify-center items-center gap-2 py-3 px-4 text-[16px] font-bold rounded-full text-white bg-accent hover:bg-accent-hover transition-all active:scale-[0.98] shadow-lg shadow-accent/25 cursor-pointer mt-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            {loading ? 'Creating Account...' : 'Sign Up'}
+                            {loading ? 'Creating Account...' : (
+                                <>
+                                    Create Account 
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
 
-                <div className="mt-6 relative">
+                <div className="mt-4 relative">
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-border-subtle"></div>
+                        <div className="w-full border-t border-white/10"></div>
                     </div>
-                    <div className="relative flex justify-center text-[12px] font-medium">
-                        <span className="px-2 bg-surface text-text-secondary">Or continue with</span>
+                    <div className="relative flex justify-center text-[11px] font-bold tracking-widest text-slate-500 uppercase">
+                        <span className="px-3 bg-surface rounded-full border border-white/5">Or continue with</span>
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                    <button className="flex items-center justify-center gap-2 px-4 py-[8px] border-[0.5px] border-border-subtle rounded-[10px] text-text-primary text-[13px] font-medium hover:bg-elevated transition-colors cursor-pointer">
-                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                <div className="mt-4 flex justify-center gap-4">
+                    <div className="flex items-center justify-center">
+                        <GoogleLogin
+                            onSuccess={async (credentialResponse) => {
+                                try {
+                                    setLoading(true);
+                                    const res = await authService.googleLogin(credentialResponse.credential);
+                                    login(res.data);
+                                } catch (error) {
+                                    console.error('Google Login Error:', error);
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            onError={() => {
+                                console.error('Login Failed');
+                            }}
+                            type="icon"
+                            theme="filled_black"
+                            shape="circle"
+                            size="large"
+                        />
+                    </div>
+                    {/* Apple Button */}
+                    <button type="button" className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded-full text-white hover:bg-white/10 transition-colors cursor-pointer shadow-sm">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                           <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.641-.026 2.669-1.48 3.666-2.94 1.16-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.484-4.648 2.597-4.72-1.541-2.252-3.934-2.56-4.78-2.617-1.554-.104-3.277 1.026-4.21 1.026zM15.006 4.604c.834-1.022 1.396-2.441 1.242-3.847-1.19.05-2.73 1.066-3.585 2.073-.76.873-1.433 2.324-1.258 3.7-.015.01-.03.02-.045.03 1.245.043 2.812-.934 3.646-1.956z"></path>
                         </svg>
-                        Google
-                    </button>
-                    <button className="flex items-center justify-center gap-2 px-4 py-[8px] border-[0.5px] border-border-subtle rounded-[10px] text-text-primary text-[13px] font-medium hover:bg-elevated transition-colors fill-current cursor-pointer">
-                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24">
-                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                        </svg>
-                        GitHub
                     </button>
                 </div>
             </div>
         </div>
     );
 }
+

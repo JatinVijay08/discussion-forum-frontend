@@ -2,24 +2,32 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-bg-base: #0f1117;
-  --color-surface: #1a1d27;
-  --color-accent: #6c63ff;
-  --color-accent-hover: #7b73ff;
-  --color-text-main: #f0f0f5;
+  --color-bg-base: #0f111a;
+  --color-surface: #1e2233;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-text-main: #f8fafc;
   --color-text-muted: #94a3b8;
-  --color-border-subtle: rgba(255, 255, 255, 0.07);
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
   --font-inter: "Inter", sans-serif;
 }
 
 @layer base {
   body {
     @apply bg-bg-base text-text-main font-inter antialiased selection:bg-accent selection:text-white;
+    background-image: radial-gradient(circle at 50% 0%, #1a2035 0%, #0f111a 60%);
+    background-attachment: fixed;
   }
 }
 
 @layer utilities {
   .card-border {
     @apply border border-border-subtle;
+  }
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  .glass-input {
+    @apply bg-white/5 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all;
   }
 }

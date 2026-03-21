@@ -7,7 +7,22 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const navigate = useNavigate();
+
+    const openAuthModal = () => setIsAuthModalOpen(true);
+    const closeAuthModal = () => setIsAuthModalOpen(false);
+
+    useEffect(() => {
+        const handleUnauthorized = () => {
+            setIsAuthModalOpen(true);
+            setUser(null);
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+        };
+        window.addEventListener('unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('unauthorized', handleUnauthorized);
+    }, []);
 
     useEffect(() => {
         // Check for token on mount and validate
@@ -60,7 +75,12 @@ export const AuthProvider = ({ children }) => {
                 username: username || decoded.username || decoded.sub || 'User',
                 ...decoded
             });
+            closeAuthModal();
             navigate('/');
+            
+            window.dispatchEvent(new CustomEvent('app-toast', { 
+                detail: { message: `Welcome ${username || decoded.username || decoded.sub || 'User'}!`, type: 'success' } 
+            }));
         } catch (error) {
             console.error("Login failed: Invalid token received");
             // Handle error appropriately, maybe clear token if invalid
@@ -75,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, isAuthModalOpen, openAuthModal, closeAuthModal }}>
             {!loading && children}
         </AuthContext.Provider>
     );

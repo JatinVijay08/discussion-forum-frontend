@@ -112,7 +112,7 @@ export default function PostDetail() {
             fetchComments(0);
             fetchPost();
         } catch (error) {
-            console.error("Failed to add comment", error);
+            // Handled globally
         }
     };
 
@@ -130,7 +130,7 @@ export default function PostDetail() {
                 setReplyingTo(null);
                 fetchComments(0); // Refresh tree
             } catch (error) {
-                console.error("Failed to post reply", error);
+                // Handled globally
             }
         };
 
@@ -143,10 +143,6 @@ export default function PostDetail() {
 
         const handleVote = async (e, type) => {
             e.stopPropagation();
-            if (!user) {
-                navigate('/login');
-                return;
-            }
             try {
                 const updatedComment = await commentService.voteOnComment(localComment.id, type);
                 let newVoteType = updatedComment.voteType;
@@ -176,18 +172,18 @@ export default function PostDetail() {
                 {depth > 0 && localComment.replies?.length > 0 && (
                     <button 
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="absolute -left-[9px] top-8 w-4 h-4 bg-bg-base border-[0.5px] border-border-subtle rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:border-border-active z-10 transition-colors"
+                        className="absolute -left-[9px] top-8 w-4 h-4 bg-slate-900 border border-white/20 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-accent z-10 transition-colors cursor-pointer"
                     >
                         {isCollapsed ? '+' : '-'}
                     </button>
                 )}
                 
                 {isCollapsed ? (
-                    <div className="flex gap-2 items-center py-1 cursor-pointer" onClick={() => setIsCollapsed(false)}>
-                        <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-white text-[10px] font-bold">
+                    <div className="flex gap-2 items-center py-2 cursor-pointer bg-white/5 px-4 rounded-xl border border-white/5 w-max hover:bg-white/10 transition-colors" onClick={() => setIsCollapsed(false)}>
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent to-purple-600 flex items-center justify-center text-white text-[11px] font-bold shadow-inner">
                             {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
                         </div>
-                        <span className="text-[13px] font-medium text-text-muted hover:text-text-primary transition-colors">
+                        <span className="text-[13px] font-medium text-slate-400 hover:text-white transition-colors">
                             u/{localComment.username} · {localComment.replies?.length || 0} child comments
                         </span>
                     </div>
@@ -197,32 +193,32 @@ export default function PostDetail() {
                         <div className="flex flex-col items-center pt-1 min-w-[32px] w-[32px] shrink-0">
                             <button
                                 onClick={(e) => handleVote(e, 'upvote')}
-                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] upvote-bounce cursor-pointer ${localComment.voteType === 'upvote' ? 'bg-accent text-white' : 'bg-elevated text-text-muted hover:text-accent'}`}
+                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${localComment.voteType === 'upvote' ? 'text-accent bg-accent/20' : 'text-text-muted hover:text-accent hover:bg-accent/10'}`}
                             >
                                 <ArrowBigUp className={`w-4 h-4 ${localComment.voteType === 'upvote' ? 'fill-current' : ''}`} />
                             </button>
-                            <span className={`text-[12px] font-semibold my-1 ${localComment.voteType === 'upvote' ? 'text-accent-light' : localComment.voteType === 'downvote' ? 'text-text-muted' : 'text-accent-light'}`}>
+                            <span className={`text-[12px] font-semibold my-1 transition-colors ${localComment.voteType === 'upvote' ? 'text-accent' : localComment.voteType === 'downvote' ? 'text-orange-500' : 'text-text-primary'}`}>
                                 {localComment.voteCount || 0}
                             </span>
                             <button
                                 onClick={(e) => handleVote(e, 'downvote')}
-                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] cursor-pointer ${localComment.voteType === 'downvote' ? 'bg-elevated text-accent' : 'bg-elevated text-text-muted hover:text-accent-light'}`}
+                                className={`w-6 h-6 flex items-center justify-center rounded-[4px] cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${localComment.voteType === 'downvote' ? 'text-orange-500 bg-orange-500/20' : 'text-text-muted hover:text-orange-500 hover:bg-orange-500/10'}`}
                             >
                                 <ArrowBigDown className={`w-4 h-4 ${localComment.voteType === 'downvote' ? 'fill-current' : ''}`} />
                             </button>
                         </div>
 
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 mb-1 text-[11px] text-text-muted flex-wrap">
-                                <div className="w-4 h-4 rounded-full bg-accent flex items-center justify-center text-white text-[8px] font-bold">
+                            <div className="flex items-center gap-2 mb-2 text-[12px] text-slate-400 flex-wrap">
+                                <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-accent to-purple-600 flex items-center justify-center text-white text-[9px] font-bold shadow-inner">
                                     {localComment.username ? localComment.username[0].toUpperCase() : 'U'}
                                 </div>
-                                <span className="font-medium text-text-primary">
+                                <span className="font-bold text-slate-200">
                                     u/{localComment.username || 'User'}
                                 </span>
                                 <span>• {new Date(localComment.createdAt || Date.now()).toLocaleDateString()}</span>
                             </div>
-                            <div className="text-[14px] text-text-secondary whitespace-pre-line break-all leading-[1.4] py-1 bg-elevated border-[0.5px] border-border-subtle rounded-[8px] p-[10px]">
+                            <div className="text-[14px] text-slate-300 whitespace-pre-line break-all leading-[1.6] py-2 glass-panel rounded-2xl px-4 shadow-sm">
                                 {localComment.content}
                             </div>
 
@@ -242,7 +238,7 @@ export default function PostDetail() {
                             {isReplying && (
                                 <form onSubmit={submitReply} className="mt-3">
                                     <textarea
-                                        className="block w-full p-3 border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-elevated focus:outline-none focus:border-accent text-[14px] min-h-[80px] resize-y hover:border-[rgba(255,255,255,0.2)] transition-all shadow-none"
+                                        className="block w-full p-4 glass-input rounded-2xl text-[14px] leading-relaxed min-h-[80px] resize-y transition-all shadow-inner"
                                         placeholder={`Replying to ${localComment.username}...`}
                                         value={replyContent}
                                         onChange={(e) => setReplyContent(e.target.value)}
@@ -252,14 +248,14 @@ export default function PostDetail() {
                                         <button
                                             type="button"
                                             onClick={() => setReplyingTo(null)}
-                                            className="px-3 py-1.5 rounded-full text-[12px] font-medium text-text-muted hover:text-text-primary cursor-pointer"
+                                            className="px-4 py-2 rounded-full text-[13px] font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={!replyContent.trim()}
-                                            className="bg-accent hover:bg-accent-light text-white px-4 py-1.5 rounded-[6px] text-[12px] font-medium transition-all disabled:opacity-50 cursor-pointer"
+                                            className="bg-accent hover:bg-accent-hover text-white px-5 py-2 rounded-full text-[13px] font-bold transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-accent/20"
                                         >
                                             Reply
                                         </button>
@@ -298,11 +294,11 @@ export default function PostDetail() {
         <div className="max-w-[740px] mx-auto pt-24 pb-6 px-4">
             <button
                 onClick={() => navigate('/')}
-                className="flex items-center gap-2 text-text-muted hover:text-text-main hover:bg-border-subtle p-2 rounded-full mb-4 transition-colors w-max"
+                className="flex items-center gap-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full mb-6 transition-all w-max border border-white/10 cursor-pointer shadow-sm"
                 aria-label="Back to feed"
             >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-[13px] font-medium pr-1">Back to Feed</span>
+                <span className="text-[13px] font-bold tracking-wide">Back to Feed</span>
             </button>
 
             {/* Post */}
@@ -310,60 +306,63 @@ export default function PostDetail() {
 
             {/* Comments Section */}
             {showComments && (
-                <div className="w-full mt-6">
-                    <h3 className="text-[15px] font-semibold text-text-primary mb-4 flex items-center gap-2">
-                        <span className="bg-[rgba(124,58,237,0.2)] text-accent-light text-[10px] px-2.5 py-1 rounded-[20px] font-semibold">{comments.length}</span>
-                        Comments
+                <div className="w-full mt-8">
+                    <h3 className="text-[16px] font-bold text-white mb-6 flex items-center gap-3">
+                        <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[11px] px-3 py-1 rounded-full font-bold shadow-sm">{post.totalCommentCount ?? post.commentCount ?? comments.length}</span>
+                        Discussion
                     </h3>
 
                     {/* Comment Form */}
                     {user ? (
-                        <div className="mb-8">
+                        <div className="mb-10">
                             {!showAddCommentForm ? (
                                 <button
                                     onClick={() => setShowAddCommentForm(true)}
-                                    className="flex items-center gap-2 text-text-secondary font-medium bg-elevated border-[0.5px] border-border-subtle hover:border-[rgba(255,255,255,0.2)] hover:text-text-primary px-4 py-2 rounded-[8px] transition-colors text-[13px] cursor-pointer shadow-none"
+                                    className="w-full flex items-center justify-between glass-panel hover:bg-white/10 text-slate-300 hover:text-white px-6 py-4 rounded-2xl transition-all text-[14px] font-medium cursor-pointer shadow-sm group"
                                 >
-                                    <MessageSquare className="w-4 h-4" />
-                                    Write a Comment
+                                    <span className="flex items-center gap-3">
+                                        <MessageSquare className="w-5 h-5 text-accent group-hover:text-accent-hover transition-colors" />
+                                        Share your thoughts...
+                                    </span>
                                 </button>
                             ) : (
                                 <form onSubmit={handleCommentSubmit} className="animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="relative">
                                         <textarea
-                                            className="block w-full p-[10px] border-[0.5px] border-border-subtle rounded-[8px] text-text-primary placeholder-text-muted bg-elevated focus:outline-none focus:border-accent text-[14px] resize-y min-h-[100px] transition-all cursor-text hover:border-[rgba(255,255,255,0.2)]"
+                                            className="block w-full p-4 glass-input rounded-2xl text-[14px] leading-relaxed min-h-[120px] resize-y transition-all shadow-inner"
                                             placeholder="What are your thoughts?"
                                             value={newComment}
                                             onChange={(e) => setNewComment(e.target.value)}
                                             autoFocus
                                         />
                                     </div>
-                                    <div className="flex justify-end mt-3 gap-2">
+                                    <div className="flex justify-end mt-3 gap-3">
                                         <button
                                             type="button"
                                             onClick={() => setShowAddCommentForm(false)}
-                                            className="px-4 py-2 rounded-[6px] font-medium text-[12px] text-text-muted hover:text-text-primary cursor-pointer"
+                                            className="px-5 py-2 rounded-full font-bold text-[13px] text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={!newComment.trim()}
-                                            className={`flex items-center gap-2 px-6 py-2 rounded-[6px] font-medium text-[12px] text-white transition-all shadow-none ${newComment.trim() ? 'bg-accent hover:bg-accent-light cursor-pointer' : 'bg-elevated border border-border-subtle text-text-muted cursor-not-allowed'}`}
+                                            className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-[13px] text-white transition-all shadow-lg ${newComment.trim() ? 'bg-accent hover:bg-accent-hover shadow-accent/20 cursor-pointer' : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed shadow-none'}`}
                                         >
                                             <Send className="w-3.5 h-3.5" />
-                                            Post
+                                            Publish
                                         </button>
                                     </div>
                                 </form>
                             )}
                         </div>
                     ) : (
-                        <div className="bg-elevated p-6 rounded-[8px] text-center mb-8 border border-border-subtle border-dashed">
-                            <p className="text-text-primary text-[14px] font-medium mb-4">Log in or sign up to join the discussion</p>
-                            <div className="flex gap-3 justify-center">
-                                <button onClick={() => navigate('/login')} className="text-text-primary border border-border-subtle hover:bg-surface px-5 py-2 rounded-[6px] font-medium text-[12px] transition-colors cursor-pointer">Log In</button>
-                                <button onClick={() => navigate('/register')} className="text-white bg-accent hover:bg-accent-light px-5 py-2 rounded-[6px] font-medium text-[12px] transition-colors cursor-pointer">Sign Up</button>
+                        <div className="glass-panel p-8 rounded-2xl text-center mb-10 flex flex-col items-center">
+                            <h4 className="text-white text-[16px] font-bold mb-2">Join the Discussion</h4>
+                            <p className="text-slate-400 text-[13px] mb-6 max-w-sm">Log in or sign up to leave a comment, vote, and become part of the community.</p>
+                            <div className="flex gap-4 justify-center">
+                                <button onClick={() => navigate('/login')} className="text-white bg-white/10 hover:bg-white/20 border border-white/10 px-6 py-2.5 rounded-full font-bold text-[13px] transition-colors cursor-pointer shadow-sm">Log In</button>
+                                <button onClick={() => navigate('/register')} className="text-white bg-accent hover:bg-accent-hover px-6 py-2.5 rounded-full font-bold text-[13px] transition-colors cursor-pointer shadow-lg shadow-accent/20">Sign Up</button>
                             </div>
                         </div>
                     )}

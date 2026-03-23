@@ -4,6 +4,7 @@ import { postService, commentService } from '../api/services';
 import PostCard from '../components/PostCard';
 import { Loader2, ArrowLeft, Send, MessageSquare, ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { timeAgo } from '../utils/timeAgo';
 
 export default function PostDetail() {
     const { id } = useParams();
@@ -216,7 +217,7 @@ export default function PostDetail() {
                                 <span className="font-bold text-slate-200">
                                     u/{localComment.username || 'User'}
                                 </span>
-                                <span>• {new Date(localComment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                <span>• {timeAgo(localComment.createdAt || localComment.createdDate)}</span>
                             </div>
                             <div className="text-[14px] text-slate-300 whitespace-pre-line break-all leading-[1.6] py-2 glass-panel rounded-2xl px-4 shadow-sm">
                                 {localComment.content}

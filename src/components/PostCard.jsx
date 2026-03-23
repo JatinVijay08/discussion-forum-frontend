@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { postService } from '../api/services';
 import { useNavigate } from 'react-router-dom';
+import { timeAgo } from '../utils/timeAgo';
 
 const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDelete = false, onDelete }) => {
     const navigate = useNavigate();
@@ -73,7 +74,7 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
                         {post.isHot ? 'Hot' : 'Discussion'}
                     </span>
                     <span className="text-[13px] text-slate-400 truncate font-medium">
-                        r/community <span className="text-slate-600 mx-1">•</span> Posted by <span className="text-slate-300">u/{post.username || 'user'}</span> <span className="text-slate-600 mx-1">•</span> {new Date(post.createdDate || Date.now()).toLocaleDateString()}
+                        r/community <span className="text-slate-600 mx-1">•</span> Posted by <span className="text-slate-300">u/{post.username || 'user'}</span> <span className="text-slate-600 mx-1">•</span> {timeAgo(post.createdAt || post.createdDate)}
                     </span>
                 </div>
 

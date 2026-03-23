@@ -7,7 +7,7 @@ export const authService = {
 };
 
 export const postService = {
-    getAllPosts: () => api.get('/posts').then(res => res.data),
+    getAllPosts: (sort = 'new', page = 10, cursor = null) => api.get('/posts', { params: { sort, page, cursor } }).then(res => res.data),
     getPostById: (id) => api.get(`/posts/${id}`).then(res => res.data),
     createPost: (createPostRequest) => api.post('/posts', createPostRequest).then(res => res.data),
     deletePost: (id) => api.delete(`/posts/${id}`),

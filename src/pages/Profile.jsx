@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { userService } from '../api/services';
 import PostCard from '../components/PostCard';
 import { Loader2, User, Mail, Calendar, MapPin, Link as LinkIcon } from 'lucide-react';
+import { timeAgo } from '../utils/timeAgo';
 
 export default function Profile() {
     const [user, setUser] = useState(null);
@@ -116,7 +117,7 @@ export default function Profile() {
                             </span>
                             <span className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" />
-                                Member since today
+                                {user?.createdAt || user?.createdDate ? `Joined ${timeAgo(user.createdAt || user.createdDate)}` : 'Member since today'}
                             </span>
                         </p>
 

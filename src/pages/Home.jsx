@@ -10,11 +10,11 @@ export default function Home() {
     const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState('');
     const [cursor, setCursor] = useState(null);
+    const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [activeTab, setActiveTab] = useState('new'); // default
 
-    const fetchPosts = async (currentCursor = null) => {
-        const isLoadMore = currentCursor !== null;
+    const fetchPosts = async (currentCursor = null, isLoadMore = false) => {
         
         if (!isLoadMore) {
             setLoading(true);
@@ -24,8 +24,13 @@ export default function Home() {
         }
 
         try {
-            const params = { sort: activeTab, page: 10 };
-            if (currentCursor) params.cursor = currentCursor;
+            const params = { sort: activeTab, limit: 10 };
+            
+            if (activeTab === 'new') {
+                if (isLoadMore && currentCursor) params.cursor = currentCursor;
+            } else {
+                params.page = isLoadMore ? page + 1 : 0;
+            }
 
             const response = await api.get('/posts', { params });
             const data = response.data;
@@ -58,6 +63,11 @@ export default function Home() {
             } else {
                 setPosts(fetchedPosts);
             }
+            
+            if (activeTab !== 'new') {
+                if (isLoadMore) setPage(prev => prev + 1);
+                else setPage(0);
+            }
 
             setCursor(nextCursorResult);
             setHasMore(hasMoreResult);
@@ -75,12 +85,13 @@ export default function Home() {
     };
 
     useEffect(() => {
-        fetchPosts(null);
+        fetchPosts(null, false);
     }, [activeTab]);
 
     const handleLoadMore = () => {
-        if (!loadingMore && hasMore && cursor) {
-            fetchPosts(cursor);
+        if (!loadingMore && hasMore) {
+            if (activeTab === 'new' && !cursor) return; // safety hook
+            fetchPosts(cursor, true);
         }
     };
 

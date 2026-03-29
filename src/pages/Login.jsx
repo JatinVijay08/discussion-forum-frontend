@@ -1,158 +1,186 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../api/services';
 import { GoogleLogin } from '@react-oauth/google';
 
-
 export default function Login() {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const { login } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: "Please enter a valid email address", type: 'warning' } }));
+            return;
+        }
         setLoading(true);
         try {
             const response = await authService.login(formData);
             login(response.data);
+            navigate('/');
         } catch (error) {
-            // Error is handled by global interceptor
+            // Handled by global interceptor
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="relative h-screen w-full bg-bg-base overflow-hidden flex items-center justify-center pt-16 pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-            <div className="max-w-[420px] w-full space-y-4 glass-panel p-6 sm:p-8 rounded-3xl relative overflow-hidden z-10">
-                <div className="relative">
-                    <h2 className="text-center text-[32px] font-bold text-white tracking-tight">
-                        Welcome Back
-                    </h2>
-                    <p className="mt-2 text-center text-[15px] text-slate-400">
-                        Join the crystal clear community conversation.
-                    </p>
-                    
-                    {/* Tabs */}
-                    <div className="flex border-b border-white/10 mt-4 mb-2">
-                        <div className="w-1/2 text-center py-2 border-b-2 border-accent text-white font-semibold text-[15px]">
-                            Login
-                        </div>
-                        <Link to="/register" className="w-1/2 text-center py-2 text-slate-400 hover:text-white font-medium text-[15px] transition-colors">
-                            Register
-                        </Link>
-                    </div>
+        <div className="min-h-screen w-full flex bg-[#0b1326]">
+            {/* Left Pane - Editorial Banner */}
+            <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 overflow-hidden border-r border-white/5">
+                {/* Background Image */}
+                <div
+                    className="absolute inset-0 z-0 bg-cover bg-center"
+                    style={{
+                        backgroundImage: "url('/discussion-forum-hero.png')",
+                        filter: "brightness(0.9) contrast(1.1)"
+                    }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-canvas/80 via-transparent to-canvas/40" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent opacity-80" />
                 </div>
 
+                {/* Top Logo */}
+                <div className="relative z-10 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+                    </div>
+                    <span className="text-[20px] font-[800] text-white tracking-tight">Discussion Forum</span>
+                </div>
 
-                <form className="mt-4 space-y-4 relative" onSubmit={handleSubmit}>
-                    <div className="space-y-3">
+                {/* Glassmorphic Motivation Card */}
+                <div className="relative z-10 w-full max-w-[480px] p-10 rounded-3xl glass ghost-border shadow-2xl backdrop-blur-3xl animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <h2 className="text-[2.25rem] font-[800] text-white leading-[1.1] mb-5 tracking-tight">
+                        Sign In
+                    </h2>
+                    <p className="text-[1.05rem] text-on-surface-variant leading-[1.6] mb-8 font-[500]">
+                        Join the community to share and discuss ideas with others.
+                    </p>
+
+                </div>
+
+                {/* Bottom Label */}
+                <div className="relative z-10">
+                    <p className="label-meta text-[9px] tracking-[0.2em] text-on-surface-variant mb-1">DISCUSSION FORUM</p>
+                    <p className="text-[14px] text-white/80 font-[500]">Community Platform</p>
+                </div>
+            </div>
+
+            {/* Right Pane - Auth Form */}
+            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
+                {/* Browse Discussions Link */}
+                <Link to="/explore" className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[700] text-on-surface-variant hover:text-white transition-colors border border-outline-variant/30 hover:bg-surface-high/30 z-50">
+                    <span className="material-symbols-outlined text-[16px]">travel_explore</span>
+                    Browse Posts
+                </Link>
+
+                {/* Mobile Logo Fallback */}
+                <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+                    </div>
+                    <span className="text-[20px] font-[800] text-white tracking-tight">Discussion Forum</span>
+                </div>
+
+                <div className="w-full max-w-[400px]">
+                    <h1 className="text-[2rem] font-[800] text-white tracking-tight mb-2">Welcome Back</h1>
+                    <p className="text-[15px] font-[500] text-on-surface-variant mb-10">Sign in to your account</p>
+
+                    {/* Social Logins */}
+                    <div className="mb-10 flex justify-center w-full">
+                        <div className="relative w-full h-[52px] rounded-xl overflow-hidden bg-surface-low border border-white/5 hover:bg-surface-high/50 transition-colors group cursor-pointer">
+                            <div className="absolute inset-0 z-10 w-full h-full opacity-0">
+                                <GoogleLogin
+                                    onSuccess={async (credentialResponse) => {
+                                        try {
+                                            setLoading(true);
+                                            const res = await authService.googleLogin(credentialResponse.credential);
+                                            login(res.data);
+                                            navigate('/explore');
+                                        } catch (error) {
+                                            console.error('Google Login Error:', error);
+                                        } finally {
+                                            setLoading(false);
+                                        }
+                                    }}
+                                    onError={() => console.error('Login Failed')}
+                                    type="standard"
+                                    theme="filled_black"
+                                    size="large"
+                                    shape="rectangular"
+                                    width="400"
+                                />
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none px-4">
+                                <svg width="20" height="20" viewBox="0 0 48 48">
+                                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                                </svg>
+                                <span className="text-[13px] font-[700] text-white tracking-wide">Continue with Google</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="flex-1 h-px bg-outline-variant/30"></div>
+                        <span className="text-[10px] font-[800] tracking-[0.15em] text-outline-variant uppercase">Or Email</span>
+                        <div className="flex-1 h-px bg-outline-variant/30"></div>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-[12px] font-bold text-slate-400 mb-2 pl-1 uppercase tracking-wider">
-                                Email Address
-                            </label>
+                            <label className="text-[10px] font-[800] tracking-[0.1em] uppercase text-on-surface-variant block mb-2 px-1">Email Address</label>
                             <input
-                                id="email"
-                                name="email"
-                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner"
-                                placeholder="name@example.com"
+                                type="email"
+                                className="w-full px-5 py-3.5 bg-surface-lowest border border-white/5 text-white text-[15px] font-[500] rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+                                placeholder="name@discussion-forum.com"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
+
                         <div>
-                            <div className="flex justify-between items-center mb-2 pl-1">
-                                <label htmlFor="password" className="block text-[12px] font-bold text-slate-400 uppercase tracking-wider">
-                                    Password
-                                </label>
-                                <a href="#" className="font-semibold text-accent hover:text-blue-400 cursor-pointer transition-colors text-[12px]">
-                                    FORGOT?
-                                </a>
+                            <label className="text-[10px] font-[800] tracking-[0.1em] uppercase text-on-surface-variant block mb-2 px-1">Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="w-full px-5 py-3.5 bg-surface-lowest border border-white/5 text-white text-[15px] font-[500] font-mono tracking-widest rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                                <span 
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant cursor-pointer hover:text-white transition-colors"
+                                >
+                                    {showPassword ? 'visibility_off' : 'visibility'}
+                                </span>
                             </div>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                className="appearance-none block w-full px-4 py-2.5 glass-input rounded-2xl focus:bg-white/10 text-[15px] shadow-inner font-mono tracking-widest"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            />
                         </div>
-                    </div>
 
-                    <div className="flex items-center mt-1">
-                        <input
-                            id="remember-me"
-                            name="remember-me"
-                            type="checkbox"
-                            className="h-4 w-4 bg-white/5 border border-white/20 rounded accent-accent cursor-pointer"
-                        />
-                        <label htmlFor="remember-me" className="ml-2 block text-[13px] text-slate-400 cursor-pointer">
-                            Stay signed in for 30 days
-                        </label>
-                    </div>
-
-                    <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`group w-full flex justify-center items-center gap-2 py-3 px-4 text-[16px] font-bold rounded-full text-white bg-accent hover:bg-accent-hover transition-all active:scale-[0.98] shadow-lg shadow-accent/25 cursor-pointer ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-full py-4 bg-primary text-[#0b1326] text-[15px] font-[800] rounded-xl cta-glow transform hover:-translate-y-0.5 duration-200 mt-4 cursor-pointer ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            {loading ? 'Signing in...' : (
-                                <>
-                                    Sign In 
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                </>
-                            )}
+                            {loading ? 'Signing In...' : 'Sign In'}
                         </button>
-                    </div>
-                </form>
+                    </form>
 
-                <div className="mt-4 relative">
-                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-white/10"></div>
+                    <div className="mt-8 text-center text-[12px] font-[600] tracking-wide text-on-surface-variant">
+                        No account?{' '}
+                        <Link to="/register" className="text-white hover:text-primary transition-colors uppercase tracking-[0.1em]">Register</Link>
                     </div>
-                    <div className="relative flex justify-center text-[11px] font-bold tracking-widest text-slate-500 uppercase">
-                        <span className="px-3 bg-surface rounded-full border border-white/5">Or continue with</span>
-                    </div>
-                </div>
-
-                <div className="mt-4 flex justify-center gap-4">
-                    <div className="flex items-center justify-center">
-                        <GoogleLogin
-                            onSuccess={async (credentialResponse) => {
-                                try {
-                                    setLoading(true);
-                                    const res = await authService.googleLogin(credentialResponse.credential);
-                                    login(res.data);
-                                } catch (error) {
-                                    console.error('Google Login Error:', error);
-                                } finally {
-                                    setLoading(false);
-                                }
-                            }}
-                            onError={() => {
-                                console.error('Login Failed');
-                            }}
-                            type="icon"
-                            theme="filled_black"
-                            shape="circle"
-                            size="large"
-                        />
-                    </div>
-                    {/* Apple Button */}
-                    <button type="button" className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded-full text-white hover:bg-white/10 transition-colors cursor-pointer shadow-sm">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                           <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.641-.026 2.669-1.48 3.666-2.94 1.16-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.484-4.648 2.597-4.72-1.541-2.252-3.934-2.56-4.78-2.617-1.554-.104-3.277 1.026-4.21 1.026zM15.006 4.604c.834-1.022 1.396-2.441 1.242-3.847-1.19.05-2.73 1.066-3.585 2.073-.76.873-1.433 2.324-1.258 3.7-.015.01-.03.02-.045.03 1.245.043 2.812-.934 3.646-1.956z"></path>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>

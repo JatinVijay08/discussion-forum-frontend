@@ -9,7 +9,17 @@ export const authService = {
 export const postService = {
     getAllPosts: (sort = 'new', limit = 10, cursor = null) => api.get('/posts', { params: { sort, limit, cursor } }).then(res => res.data),
     getPostById: (id) => api.get(`/posts/${id}`).then(res => res.data),
-    createPost: (createPostRequest) => api.post('/posts', createPostRequest).then(res => res.data),
+    createPost: (title, content, mediaFile) => {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+        if (mediaFile) {
+            formData.append('media', mediaFile);
+        }
+        return api.post('/posts', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        }).then(res => res.data);
+    },
     deletePost: (id) => api.delete(`/posts/${id}`),
     vote: (postId, voteType) => api.post(`/posts/${postId}/votes`, { voteType }).then(res => res.data),
 };

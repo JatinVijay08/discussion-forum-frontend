@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 const ToastContext = createContext(null);
 
@@ -16,7 +15,6 @@ export const ToastProvider = ({ children }) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, []);
 
-    // Global event listener for errors
     useEffect(() => {
         const handleGlobalToast = (event) => {
             const { message, type, duration, title, details } = event.detail;
@@ -40,49 +38,53 @@ export const ToastProvider = ({ children }) => {
 
 const ToastItem = ({ message, type, duration, title, details, onRemove }) => {
     useEffect(() => {
-        // Increase duration if there are details to read
         const displayDuration = details ? Math.max(duration || 5000, 7000) : (duration || 5000);
         const timer = setTimeout(onRemove, displayDuration);
         return () => clearTimeout(timer);
     }, [duration, details, onRemove]);
 
     const icons = {
-        success: <CheckCircle className="w-5 h-5 text-emerald-400" />,
-        error: <AlertCircle className="w-5 h-5 text-rose-400" />,
-        warning: <AlertTriangle className="w-5 h-5 text-amber-400" />,
-        info: <Info className="w-5 h-5 text-blue-400" />,
+        success: 'check_circle',
+        error: 'error',
+        warning: 'warning',
+        info: 'info',
     };
 
-    const styles = {
-        success: 'border-emerald-500/20 bg-emerald-500/5',
-        error: 'border-rose-500/20 bg-rose-500/5',
-        warning: 'border-amber-500/20 bg-amber-500/5',
-        info: 'border-blue-500/20 bg-blue-500/5',
+    const colors = {
+        success: { icon: '#bdc2ff', bg: 'rgba(189, 194, 255, 0.06)' },
+        error: { icon: '#ffb4ab', bg: 'rgba(255, 180, 171, 0.06)' },
+        warning: { icon: '#f7bd3e', bg: 'rgba(247, 189, 62, 0.06)' },
+        info: { icon: '#818cf8', bg: 'rgba(129, 140, 248, 0.06)' },
     };
+
+    const c = colors[type] || colors.info;
 
     return (
-        <div className={`pointer-events-auto flex items-start gap-3 p-4 glass-panel border rounded-2xl shadow-2xl animate-in slide-in-from-right-full duration-300 ${styles[type]}`}>
-            <div className="shrink-0 pt-0.5">{icons[type]}</div>
+        <div
+            className="pointer-events-auto flex items-start gap-3 p-4 ghost-border"
+            style={{
+                background: c.bg,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '1rem',
+            }}
+        >
+            <span className="material-symbols-outlined text-[20px] shrink-0 mt-0.5" style={{ color: c.icon }}>{icons[type] || 'info'}</span>
             <div className="flex-1 min-w-0">
-                {title && <h4 className="text-[14px] font-bold text-white mb-0.5">{title}</h4>}
-                <p className={`text-[13px] font-medium text-slate-300 leading-relaxed break-words ${!title ? 'text-white text-[14px]' : ''}`}>
+                {title && <h4 className="text-[14px] font-[700] text-on-surface mb-0.5">{title}</h4>}
+                <p className={`text-[13px] font-[500] text-on-surface-variant leading-relaxed break-words ${!title ? 'text-on-surface text-[14px]' : ''}`}>
                     {message}
                 </p>
                 {details && details.length > 0 && (
                     <div className="mt-2 space-y-1">
                         {details.map((detail, idx) => (
-                            <p key={idx} className="text-[12px] text-rose-400/90 font-medium">
-                                {detail}
-                            </p>
+                            <p key={idx} className="text-[12px] text-error font-[500]">{detail}</p>
                         ))}
                     </div>
                 )}
             </div>
-            <button
-                onClick={onRemove}
-                className="shrink-0 p-1 text-slate-400 hover:text-white transition-colors"
-            >
-                <X className="w-4 h-4" />
+            <button onClick={onRemove} className="shrink-0 p-1 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">close</span>
             </button>
         </div>
     );

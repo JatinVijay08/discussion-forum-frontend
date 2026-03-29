@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, LogIn, UserPlus } from 'lucide-react';
 
 export default function AuthModal() {
     const { isAuthModalOpen, closeAuthModal } = useAuth();
@@ -15,47 +14,49 @@ export default function AuthModal() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-bg-base/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="glass-panel max-w-sm w-full p-8 rounded-3xl shadow-2xl relative animate-in zoom-in-95 duration-300 border border-white/10">
-                {/* Close Button */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 atelier-overlay" style={{ justifyContent: 'center', alignItems: 'flex-start', paddingTop: '20vh' }}>
+            <div className="atelier-panel max-w-sm w-full p-8 relative" style={{ borderRadius: '1.5rem' }}>
+                {/* Close */}
                 <button
                     onClick={closeAuthModal}
-                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer"
+                    className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-high/30 transition-colors cursor-pointer"
                 >
-                    <X className="w-5 h-5" />
+                    <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
 
-                {/* Content */}
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20">
-                        <div className="w-6 h-6 bg-white rounded-md rotate-45"></div>
+                <div>
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-container to-primary flex items-center justify-center mb-6">
+                        <span className="material-symbols-outlined text-[24px] text-canvas">diamond</span>
                     </div>
-                    
-                    <h3 className="text-[22px] font-bold text-white mb-3 tracking-tight">Join the Conversation</h3>
-                    <p className="text-slate-400 text-[14px] leading-relaxed mb-8">
-                        Upvoting, downvoting, and commenting are exclusive features for community members. Sign in to participate!
+
+                    <h3 className="text-[1.5rem] font-[700] text-on-surface tracking-tight mb-2">
+                        Join the Forum
+                    </h3>
+                    <p className="text-[14px] text-on-surface-variant leading-[1.7] mb-8">
+                        Sign in to join the conversation and participate.
                     </p>
 
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-3">
                         <button
                             onClick={() => handleAction('/login')}
-                            className="w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-full font-bold text-[15px] transition-all shadow-lg shadow-accent/20 cursor-pointer flex items-center justify-center gap-2 group"
+                            className="w-full py-3.5 btn-primary text-[15px] cursor-pointer flex items-center justify-center gap-2"
+                            style={{ borderRadius: '0.75rem' }}
                         >
                             Sign In
-                            <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                         </button>
-                        
+
                         <button
                             onClick={() => handleAction('/register')}
-                            className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full font-bold text-[15px] transition-all cursor-pointer flex items-center justify-center gap-2"
+                            className="w-full py-3.5 btn-secondary text-[15px] cursor-pointer"
+                            style={{ borderRadius: '0.75rem' }}
                         >
-                            <UserPlus className="w-4 h-4" />
                             Create Account
                         </button>
                     </div>
 
-                    <p className="mt-6 text-[12px] text-slate-500 font-medium uppercase tracking-widest">
-                        GlassForum Crystal Clear UI
+                    <p className="mt-6 label-meta text-[9px] text-outline-variant text-center">
+                        Discussion Forum
                     </p>
                 </div>
             </div>

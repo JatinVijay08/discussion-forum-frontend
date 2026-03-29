@@ -1,25 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { userService } from '../api/services';
 import PostCard from '../components/PostCard';
-import { Loader2, User, Mail, Calendar, Pencil, Check, X, TrendingUp, Clock, Flame } from 'lucide-react';
 import { timeAgo } from '../utils/timeAgo';
 import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
     const { user: authUser, login } = useAuth();
 
-    // Profile data
     const [user, setUser] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
     const [error, setError] = useState('');
 
-    // Posts
     const [posts, setPosts] = useState([]);
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [postSort, setPostSort] = useState('new');
     const [postsLoaded, setPostsLoaded] = useState(false);
 
-    // Username editing
     const [editingUsername, setEditingUsername] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [usernameLoading, setUsernameLoading] = useState(false);
@@ -27,156 +23,90 @@ export default function Profile() {
     const [showUsernameConfirm, setShowUsernameConfirm] = useState(false);
     const inputRef = useRef(null);
 
-    // Delete post
     const [postToDelete, setPostToDelete] = useState(null);
     const [deleteError, setDeleteError] = useState('');
-
-    // Success toast
     const [successToast, setSuccessToast] = useState('');
 
     useEffect(() => { fetchUser(); }, []);
+    useEffect(() => { if (postsLoaded) fetchUserPosts(); }, [postSort]);
 
-    useEffect(() => {
-        if (postsLoaded) {
-            fetchUserPosts();
-        }
-    }, [postSort]);
-
-    const showToast = (msg) => {
-        setSuccessToast(msg);
-        setTimeout(() => setSuccessToast(''), 3500);
-    };
+    const showToast = (msg) => { setSuccessToast(msg); setTimeout(() => setSuccessToast(''), 3500); };
 
     const fetchUser = async () => {
         try {
             const data = await userService.getCurrentUser();
             setUser(data);
-            setNewUsername(data.username);
-            // auto-load posts
+            setNewUsername(data.username || authUser?.username || '');
             fetchUserPosts();
             setPostsLoaded(true);
-        } catch (err) {
-            setError('Failed to load profile.');
-        } finally {
-            setLoadingUser(false);
-        }
+        } catch (err) { setError('Failed to load profile.'); }
+        finally { setLoadingUser(false); }
     };
 
     const fetchUserPosts = async () => {
         setLoadingPosts(true);
-        try {
-            const data = await userService.getUserPosts(postSort);
-            setPosts(data);
-        } catch (err) {
-            console.error('Failed to fetch user posts', err);
-        } finally {
-            setLoadingPosts(false);
-        }
+        try { setPosts(await userService.getUserPosts(postSort)); }
+        catch (err) { console.error('Failed to fetch user posts', err); }
+        finally { setLoadingPosts(false); }
     };
 
-    // Username update flow
-    const startEditing = () => {
-        setNewUsername(user.username);
-        setUsernameError('');
-        setEditingUsername(true);
-        setTimeout(() => inputRef.current?.focus(), 50);
-    };
-
-    const cancelEditing = () => {
-        setEditingUsername(false);
-        setUsernameError('');
-        setNewUsername(user.username);
-    };
+    const startEditing = () => { setNewUsername(user.username); setUsernameError(''); setEditingUsername(true); setTimeout(() => inputRef.current?.focus(), 50); };
+    const cancelEditing = () => { setEditingUsername(false); setUsernameError(''); setNewUsername(user.username); };
 
     const requestUsernameChange = () => {
         const trimmed = newUsername.trim();
-        if (!trimmed || trimmed.length < 3) {
-            setUsernameError('Username must be at least 3 characters.');
-            return;
-        }
-        if (trimmed === user.username) {
-            setEditingUsername(false);
-            return;
-        }
-        setUsernameError('');
-        setShowUsernameConfirm(true);
+        if (!trimmed || trimmed.length < 3) { setUsernameError('Username must be at least 3 characters.'); return; }
+        if (trimmed === user.username) { setEditingUsername(false); return; }
+        setUsernameError(''); setShowUsernameConfirm(true);
     };
 
     const confirmUsernameChange = async () => {
-        setUsernameLoading(true);
-        setShowUsernameConfirm(false);
+        setUsernameLoading(true); setShowUsernameConfirm(false);
         try {
             const updated = await userService.updateUsername(newUsername.trim());
-            setUser(updated);
-            setEditingUsername(false);
-            // Also update localStorage username so nav reflects change
+            setUser(updated); setEditingUsername(false);
             localStorage.setItem('username', updated.username);
-            showToast(`Username updated to "${updated.username}" 🎉`);
+            showToast(`Username updated to "${updated.username}"`);
             setTimeout(() => window.location.reload(), 1200);
-        } catch (err) {
-            setUsernameError(err?.response?.data?.message || 'Username already taken.');
-        } finally {
-            setUsernameLoading(false);
-        }
+        } catch (err) { setUsernameError(err?.response?.data?.message || 'Username already taken.'); }
+        finally { setUsernameLoading(false); }
     };
 
-    // Delete post flow
     const handleDeletePost = async () => {
         if (!postToDelete) return;
         setDeleteError('');
-        try {
-            await userService.deleteUserPost(postToDelete);
-            setPosts(prev => prev.filter(p => p.id !== postToDelete));
-            setPostToDelete(null);
-            showToast('Post deleted successfully.');
-        } catch (err) {
-            setDeleteError('Failed to delete post. Please try again.');
-            setPostToDelete(null);
-        }
+        try { await userService.deleteUserPost(postToDelete); setPosts(prev => prev.filter(p => p.id !== postToDelete)); setPostToDelete(null); showToast('Post removed.'); }
+        catch (err) { setDeleteError('Failed to delete post.'); setPostToDelete(null); }
     };
+
+    const karma = posts.reduce((acc, p) => acc + (p.voteCount || 0), 0);
+    const totalComments = posts.reduce((acc, p) => acc + (p.commentCount || 0), 0);
 
     if (loadingUser) {
         return (
-            <div className="flex justify-center items-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <div className="flex justify-center items-center min-h-[60vh] pt-24">
+                <span className="material-symbols-outlined text-primary text-[32px] animate-pulse">diamond</span>
             </div>
         );
     }
 
-    if (error) {
-        return <div className="text-center py-10 text-red-400">{error}</div>;
-    }
+    if (error) return <div className="text-center py-16 text-error pt-24">{error}</div>;
 
     return (
-        <div className="max-w-[740px] mx-auto pt-24 pb-12 px-4">
-
+        <div className="max-w-[900px] mx-auto pt-24 pb-16 px-6 md:px-10">
             {/* Success Toast */}
             {successToast && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-green-500/20 border border-green-500/30 text-green-300 font-semibold text-[13px] rounded-full shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full text-[13px] font-[700] text-primary glass ghost-border">
                     {successToast}
                 </div>
             )}
 
-            {/* Profile Header Card */}
-            <div className="relative glass-panel rounded-3xl mb-8">
-                {/* Cover */}
-                <div className="h-36 bg-gradient-to-r from-blue-900/40 via-purple-900/40 to-slate-900/40 w-full relative rounded-t-3xl overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-                </div>
-
-                <div className="px-8 pb-8 relative">
-                    {/* Avatar */}
-                    <div className="absolute -top-14 left-8">
-                        <div className="w-28 h-28 rounded-full bg-slate-900 p-1.5 shadow-2xl border border-white/10">
-                            <div className="w-full h-full bg-gradient-to-tr from-accent to-purple-600 rounded-full flex items-center justify-center text-[42px] font-bold text-white">
-                                {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pt-18 ml-1" style={{ paddingTop: '72px' }}>
-                        {/* Username row */}
-                        <div className="flex items-center gap-3 mb-1 flex-wrap">
+            {/* Profile Header */}
+            <div className="mb-12 border-b border-white/5 pb-12">
+                <div className="flex flex-col gap-6">
+                    <div className="flex-1 min-w-0">
+                        {/* Username */}
+                        <div className="flex items-center gap-3 mb-4 flex-wrap">
                             {editingUsername ? (
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <input
@@ -184,194 +114,153 @@ export default function Profile() {
                                         value={newUsername}
                                         onChange={e => { setNewUsername(e.target.value); setUsernameError(''); }}
                                         onKeyDown={e => { if (e.key === 'Enter') requestUsernameChange(); if (e.key === 'Escape') cancelEditing(); }}
-                                        className="bg-white/5 border border-accent/40 text-white rounded-xl px-4 py-1.5 text-[20px] font-bold outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all w-56"
+                                        className="obsidian-input px-4 py-2 text-[1.5rem] font-[700] w-64"
+                                        style={{ borderRadius: '0.75rem' }}
                                         maxLength={30}
                                         placeholder="New username"
                                     />
-                                    <button
-                                        onClick={requestUsernameChange}
-                                        disabled={usernameLoading}
-                                        className="p-1.5 rounded-full bg-green-500/20 hover:bg-green-500/30 text-green-400 transition-colors cursor-pointer"
-                                        title="Save"
-                                    >
-                                        {usernameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                    <button onClick={requestUsernameChange} disabled={usernameLoading}
+                                        className="w-10 h-10 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary flex items-center justify-center transition-colors cursor-pointer">
+                                        <span className="material-symbols-outlined text-[18px]">{usernameLoading ? 'progress_activity' : 'check'}</span>
                                     </button>
-                                    <button
-                                        onClick={cancelEditing}
-                                        className="p-1.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors cursor-pointer"
-                                        title="Cancel"
-                                    >
-                                        <X className="w-4 h-4" />
+                                    <button onClick={cancelEditing}
+                                        className="w-10 h-10 rounded-xl bg-error/10 hover:bg-error/20 text-error flex items-center justify-center transition-colors cursor-pointer">
+                                        <span className="material-symbols-outlined text-[18px]">close</span>
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-[26px] font-bold text-white tracking-tight">{user?.username}</h1>
-                                    <button
-                                        onClick={startEditing}
-                                        className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
-                                        title="Edit username"
-                                    >
-                                        <Pencil className="w-4 h-4" />
+                                <div className="flex items-center gap-4">
+                                    <h1 className="text-[2.5rem] md:text-[3.5rem] font-[800] tracking-[-0.04em] leading-[1.0] text-white">
+                                        {user?.username || authUser?.username || 'User'}
+                                    </h1>
+                                    <button onClick={startEditing}
+                                        className="p-2.5 rounded-xl hover:bg-surface-high/40 text-on-surface-variant hover:text-white transition-colors cursor-pointer">
+                                        <span className="material-symbols-outlined text-[18px]">edit</span>
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        {usernameError && (
-                            <p className="text-red-400 text-[12px] mb-2 ml-1">{usernameError}</p>
-                        )}
+                        {usernameError && <p className="text-error text-[12px] mb-4 font-[600]">{usernameError}</p>}
 
-                        {/* Meta info */}
-                        <div className="flex flex-wrap gap-5 text-slate-400 text-[13px] font-medium mb-1">
-                            <span className="flex items-center gap-1.5">
-                                <Mail className="w-3.5 h-3.5 shrink-0" />
+                        {/* Meta */}
+                        <div className="flex flex-wrap gap-6 text-on-surface-variant text-[14px] font-[500]">
+                            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-low/50">
+                                <span className="material-symbols-outlined text-[18px]">mail</span>
                                 {user?.email}
                             </span>
-                            <span className="flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-low/50">
+                                <span className="material-symbols-outlined text-[18px]">calendar_today</span>
                                 {user?.createdAt ? `Joined ${timeAgo(user.createdAt)}` : 'Member since today'}
                             </span>
                         </div>
-
-                        {/* Stats row */}
-                        <div className="flex items-center gap-6 mt-5 pt-5 border-t border-white/10">
-                            {/* Posts */}
-                            <div className="text-center">
-                                <p className="text-[22px] font-bold text-white">{posts.length}</p>
-                                <p className="text-[11px] uppercase tracking-wider font-semibold flex items-center justify-center gap-1 text-blue-400/70">
-                                    Posts
-                                    <span className="relative group cursor-default text-slate-600 text-[10px] border border-slate-700 rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none hover:border-slate-500 hover:text-slate-400 transition-colors">
-                                        ?
-                                        <div className="absolute bottom-full left-0 mb-2 w-52 px-3 py-2 bg-slate-800 border border-white/10 rounded-xl text-[11px] text-slate-300 leading-relaxed shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-left normal-case tracking-normal">
-                                            <div className="absolute top-full left-3 border-4 border-transparent border-t-slate-800" />
-                                            <span className="text-blue-400 font-bold">📝 Posts</span> are your voice on the forum. Each one is a discussion you've started — an idea thrown into the void.
-                                        </div>
-                                    </span>
-                                </p>
-                            </div>
-                            <div className="w-px h-8 bg-white/10" />
-                            {/* Karma */}
-                            <div className="text-center">
-                                <p className="text-[22px] font-bold text-white">
-                                    {posts.reduce((acc, p) => acc + (p.voteCount || 0), 0)}
-                                </p>
-                                <p className="text-[11px] uppercase tracking-wider font-semibold flex items-center justify-center gap-1 text-amber-400/70">
-                                    Karma
-                                    <span className="relative group cursor-default text-slate-600 text-[10px] border border-slate-700 rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none hover:border-slate-500 hover:text-slate-400 transition-colors">
-                                        ?
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 px-3 py-2 bg-slate-800 border border-white/10 rounded-xl text-[11px] text-slate-300 leading-relaxed shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-left normal-case tracking-normal">
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
-                                            <span className="text-yellow-400 font-bold">✨ Karma</span> is your vibe score — every upvote you earn adds to it, every downvote chips away. Post well, earn more.
-                                        </div>
-                                    </span>
-                                </p>
-                            </div>
-                            <div className="w-px h-8 bg-white/10" />
-                            {/* Comments */}
-                            <div className="text-center">
-                                <p className="text-[22px] font-bold text-white">
-                                    {posts.reduce((acc, p) => acc + (p.commentCount || 0), 0)}
-                                </p>
-                                <p className="text-[11px] uppercase tracking-wider font-semibold flex items-center justify-center gap-1 text-emerald-400/70">
-                                    Comments
-                                    <span className="relative group cursor-default text-slate-600 text-[10px] border border-slate-700 rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none hover:border-slate-500 hover:text-slate-400 transition-colors">
-                                        ?
-                                        <div className="absolute bottom-full right-0 mb-2 w-52 px-3 py-2 bg-slate-800 border border-white/10 rounded-xl text-[11px] text-slate-300 leading-relaxed shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 text-left normal-case tracking-normal">
-                                            <div className="absolute top-full right-3 border-4 border-transparent border-t-slate-800" />
-                                            <span className="text-green-400 font-bold">💬 Comments</span> are the total replies left on your posts. The more debate you spark, the better the idea.
-                                        </div>
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-4 mt-10 max-w-[480px]">
+                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.5rem] font-[800] text-on-surface mb-1">{posts.length}</p>
+                    <p className="label-meta text-[9px] text-primary flex items-center justify-center gap-1">
+                        Posts
+                        <span className="relative group cursor-default">
+                            <span className="text-outline-variant text-[9px] ghost-border rounded-full w-3 h-3 flex items-center justify-center font-[800] leading-none hover:text-on-surface-variant transition-colors">?</span>
+                            <span className="absolute bottom-full left-0 mb-2 w-48 px-3 py-2 rounded-xl text-[10px] text-on-surface-variant leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-left normal-case tracking-normal" style={{ background: '#2d3449', boxShadow: '0 20px 50px rgba(13, 15, 38, 0.6)' }}>
+                                <span className="text-primary font-[700]">Posts</span> — Discussions you've started.
+                            </span>
+                        </span>
+                    </p>
+                </div>
+                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.5rem] font-[800] text-tertiary-gold mb-1 pulse-accent">{karma}</p>
+                    <p className="label-meta text-[9px] text-tertiary-gold flex items-center justify-center gap-1">
+                        Karma
+                        <span className="relative group cursor-default">
+                            <span className="text-outline-variant text-[9px] ghost-border rounded-full w-3 h-3 flex items-center justify-center font-[800] leading-none hover:text-on-surface-variant transition-colors">?</span>
+                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 px-3 py-2 rounded-xl text-[10px] text-on-surface-variant leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-left normal-case tracking-normal" style={{ background: '#2d3449', boxShadow: '0 20px 50px rgba(13, 15, 38, 0.6)' }}>
+                                <span className="text-tertiary-gold font-[700]">Karma</span> — Your reputation score. Upvotes add, downvotes subtract.
+                            </span>
+                        </span>
+                    </p>
+                </div>
+                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.5rem] font-[800] text-on-surface mb-1">{totalComments}</p>
+                    <p className="label-meta text-[9px] text-primary-container flex items-center justify-center gap-1">
+                        Comments
+                        <span className="relative group cursor-default">
+                            <span className="text-outline-variant text-[9px] ghost-border rounded-full w-3 h-3 flex items-center justify-center font-[800] leading-none hover:text-on-surface-variant transition-colors">?</span>
+                            <span className="absolute bottom-full right-0 mb-2 w-48 px-3 py-2 rounded-xl text-[10px] text-on-surface-variant leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-left normal-case tracking-normal" style={{ background: '#2d3449', boxShadow: '0 20px 50px rgba(13, 15, 38, 0.6)' }}>
+                                <span className="text-primary-container font-[700]">Comments</span> — Replies across your posts.
+                            </span>
+                        </span>
+                    </p>
                 </div>
             </div>
 
             {/* Posts Section */}
-            <div>
-                {/* Section header + sort tabs */}
-                <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                    <h2 className="text-[18px] font-bold text-white flex items-center gap-3">
-                        <span className="w-1.5 h-5 bg-accent rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-                        Your Contributions
-                    </h2>
+            <div className="mt-12">
+                    <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+                        <h2 className="text-[1.25rem] font-[700] text-on-surface flex items-center gap-3">
+                            <span className="w-1 h-5 rounded-full bg-primary"></span>
+                            Your Posts
+                        </h2>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setPostSort('new')}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-bold transition-all cursor-pointer border ${postSort === 'new' ? 'bg-accent/20 text-accent border-accent/30' : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5 border-transparent'}`}
-                        >
-                            <Clock className="w-3.5 h-3.5" />
-                            New
-                        </button>
-                        <button
-                            onClick={() => setPostSort('top')}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-bold transition-all cursor-pointer border ${postSort === 'top' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5 border-transparent'}`}
-                        >
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            Top
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => setPostSort('new')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[800] uppercase tracking-[0.1em] transition-all cursor-pointer ${postSort === 'new' ? 'bg-primary/10 text-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-high/40'}`}>
+                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                New
+                            </button>
+                            <button onClick={() => setPostSort('top')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[800] uppercase tracking-[0.1em] transition-all cursor-pointer ${postSort === 'top' ? 'bg-tertiary-gold/10 text-tertiary-gold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-high/40'}`}>
+                                <span className="material-symbols-outlined text-[14px]">trending_up</span>
+                                Top
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                {deleteError && (
-                    <div className="mb-5 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-[13px] text-red-400 text-center">
-                        {deleteError}
-                    </div>
-                )}
+                    {deleteError && (
+                        <div className="mb-5 p-3 rounded-xl text-[13px] font-[600] text-error" style={{ background: 'rgba(255, 180, 171, 0.08)' }}>
+                            {deleteError}
+                        </div>
+                    )}
 
-                {loadingPosts ? (
-                    <div className="flex justify-center py-16">
-                        <Loader2 className="w-7 h-7 animate-spin text-accent" />
-                    </div>
-                ) : posts.length > 0 ? (
-                    <div className="space-y-3">
-                        {posts.map(post => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                showDelete={true}
-                                onDelete={(id) => setPostToDelete(id)}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-14 glass-panel rounded-3xl border border-white/5 border-dashed">
-                        <User className="w-10 h-10 text-slate-600 mx-auto mb-4" />
-                        <p className="text-[15px] font-semibold text-slate-300 mb-1">No posts yet</p>
-                        <p className="text-[13px] text-slate-500">Your contributions will appear here.</p>
-                    </div>
-                )}
+                    {loadingPosts ? (
+                        <div className="flex justify-center py-16">
+                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : posts.length > 0 ? (
+                        <div className="flex flex-col gap-8">
+                            {posts.map(post => (
+                                <PostCard key={post.id} post={post} showDelete={true} onDelete={(id) => setPostToDelete(id)} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="card-l2 p-12 text-center flex flex-col items-center gap-4" style={{ borderRadius: '1.5rem' }}>
+                            <span className="material-symbols-outlined text-[36px] text-outline-variant">person</span>
+                            <h3 className="text-[1.125rem] font-[700] text-on-surface">No curations yet</h3>
+                            <p className="text-[14px] text-on-surface-variant">Your contributions will appear here.</p>
+                        </div>
+                    )}
             </div>
 
             {/* Username Confirm Modal */}
             {showUsernameConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="glass-panel max-w-sm w-full p-7 rounded-3xl shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
-                        <h3 className="text-[19px] font-bold text-white mb-2 tracking-tight">Change Username?</h3>
-                        <p className="text-slate-400 text-[13px] leading-relaxed mb-1">
-                            Your username will change from
-                        </p>
-                        <p className="text-[13px] mb-5">
-                            <span className="text-slate-200 font-semibold">"{user?.username}"</span>
+                <div className="fixed inset-0 z-50 flex items-center p-4 atelier-overlay" style={{ justifyContent: 'center', alignItems: 'flex-start', paddingTop: '20vh' }}>
+                    <div className="atelier-panel max-w-sm w-full p-7" style={{ borderRadius: '1.5rem' }}>
+                        <h3 className="text-[1.25rem] font-[700] text-on-surface tracking-tight mb-2">Change Username?</h3>
+                        <p className="text-on-surface-variant text-[13px] leading-[1.7] mb-1">Your username will change from</p>
+                        <p className="text-[13px] mb-6">
+                            <span className="text-on-surface font-[600]">"{user?.username || authUser?.username}"</span>
                             {' → '}
-                            <span className="text-accent font-semibold">"{newUsername.trim()}"</span>
+                            <span className="text-primary font-[600]">"{newUsername.trim()}"</span>
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setShowUsernameConfirm(false)}
-                                className="px-5 py-2 rounded-full text-[13px] font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmUsernameChange}
-                                className="px-5 py-2 rounded-full text-[13px] font-bold text-white bg-accent hover:bg-blue-600 transition-colors shadow-lg shadow-accent/20 cursor-pointer"
-                            >
-                                Confirm
-                            </button>
+                            <button onClick={() => setShowUsernameConfirm(false)}
+                                className="btn-ghost px-5 py-2.5 text-[13px] font-[700] cursor-pointer" style={{ borderRadius: '0.5rem' }}>Cancel</button>
+                            <button onClick={confirmUsernameChange}
+                                className="btn-primary btn-pill px-5 py-2.5 text-[13px] cursor-pointer">Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -379,25 +268,18 @@ export default function Profile() {
 
             {/* Delete Confirmation Modal */}
             {postToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="glass-panel max-w-sm w-full p-7 rounded-3xl shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
-                        <h3 className="text-[19px] font-bold text-white mb-2 tracking-tight">Delete Post?</h3>
-                        <p className="text-slate-400 text-[13px] leading-relaxed mb-7">
-                            This will permanently remove the post and all its votes. This cannot be undone.
+                <div className="fixed inset-0 z-50 flex items-center p-4 atelier-overlay" style={{ justifyContent: 'center', alignItems: 'flex-start', paddingTop: '20vh' }}>
+                    <div className="atelier-panel max-w-sm w-full p-7" style={{ borderRadius: '1.5rem' }}>
+                        <h3 className="text-[1.25rem] font-[700] text-on-surface tracking-tight mb-2">Remove Curation?</h3>
+                        <p className="text-on-surface-variant text-[13px] leading-[1.7] mb-7">
+                            This will permanently remove the post and all its votes. This action cannot be undone.
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setPostToDelete(null)}
-                                className="px-5 py-2 rounded-full text-[13px] font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDeletePost}
-                                className="px-5 py-2 rounded-full text-[13px] font-bold text-white bg-red-500/80 hover:bg-red-500 transition-colors shadow-lg shadow-red-500/20 cursor-pointer"
-                            >
-                                Delete
-                            </button>
+                            <button onClick={() => setPostToDelete(null)}
+                                className="btn-ghost px-5 py-2.5 text-[13px] font-[700] cursor-pointer" style={{ borderRadius: '0.5rem' }}>Cancel</button>
+                            <button onClick={handleDeletePost}
+                                className="px-5 py-2.5 text-[13px] font-[800] text-canvas cursor-pointer"
+                                style={{ borderRadius: '9999px', background: 'linear-gradient(to right, #ff8a80, #ffb4ab)' }}>Delete</button>
                         </div>
                     </div>
                 </div>

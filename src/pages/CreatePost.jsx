@@ -1,93 +1,166 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postService } from '../api/services';
 
 export default function CreatePost() {
+    const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const navigate = useNavigate();
+    const [mediaFile, setMediaFile] = useState(null);
+    const [mediaPreview, setMediaPreview] = useState(null);
+    const [mediaType, setMediaType] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const MAX_SIZE = 50 * 1024 * 1024;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+
+    const handleFile = (file) => {
+        if (!file) return;
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'Unsupported file type', type: 'warning' } }));
+            return;
+        }
+        if (file.size > MAX_SIZE) {
+            window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'File exceeds 50MB limit', type: 'warning' } }));
+            return;
+        }
+        setMediaFile(file);
+        setMediaType(file.type.startsWith('video') ? 'video' : 'image');
+        setMediaPreview(URL.createObjectURL(file));
+    };
+
+    const clearMedia = () => {
+        if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+        setMediaFile(null);
+        setMediaPreview(null);
+        setMediaType(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!title.trim() || !content.trim()) return;
+        setLoading(true);
         try {
-            await postService.createPost({
-                title,
-                content
-            });
+            await postService.createPost(title, content, mediaFile);
             navigate('/');
-        } catch (error) {
-            // Error handled by global interceptor
+        } catch (err) {
+            // Handled globally
+        } finally {
+            setLoading(false);
         }
     };
 
+    const formatSize = (bytes) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    };
+
     return (
-        <div className="max-w-[740px] mx-auto pt-24 pb-8 px-4">
-            <div className="flex items-center gap-3 pb-6 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <span className="text-white font-bold text-xl">+</span>
-                </div>
-                <h1 className="text-[24px] font-bold text-white tracking-tight">Create a post</h1>
-            </div>
+        <div className="pt-24 pb-16 px-8 md:px-12 max-w-[80rem] mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                {/* Editor — Left */}
+                <div className="lg:col-span-8">
+                    <p className="label-meta text-primary mb-3">New Post</p>
+                    <h1 className="text-[2.5rem] md:text-[3.5rem] font-[800] text-on-surface tracking-[-0.04em] leading-[0.9] mb-12">
+                        Create a<br />new post.
+                    </h1>
 
-            <div className="glass-panel rounded-3xl overflow-hidden transition-colors duration-300 mb-8">
-                {/* Tabs */}
-                <div className="flex border-b border-white/10 bg-white/5">
-                    <button className="flex-1 py-4 text-center text-[15px] font-bold text-white border-b-2 border-accent bg-transparent cursor-default tracking-wide">
-                        Post Discussion
-                    </button>
-                </div>
-
-                {/* Form */}
-                <div className="p-4 sm:p-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="relative">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Title */}
+                        <div className="focus-underline">
                             <input
                                 type="text"
-                                className="block w-full px-5 py-4 glass-input rounded-2xl text-[16px] font-semibold tracking-wide transition-all shadow-inner"
-                                placeholder="An interesting title"
-                                maxLength={300}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
+                                className="w-full bg-transparent text-[1.75rem] font-[700] text-on-surface tracking-tight outline-none pb-3"
+                                placeholder="Post Title"
+                                style={{ color: title ? '#dae2fd' : '#2d3449' }}
                             />
-                            <div className="absolute right-4 top-4 text-[12px] text-slate-400 font-mono bg-bg-base/80 px-2 py-0.5 rounded-md">{title.length}/300</div>
                         </div>
 
-                        <div className="relative">
+                        {/* Body */}
+                        <div className="rounded-xl p-6" style={{ background: 'rgba(19, 27, 46, 0.5)' }}>
                             <textarea
-                                rows={8}
-                                className="block w-full px-5 py-4 glass-input rounded-2xl text-[15px] resize-none transition-all shadow-inner leading-relaxed"
-                                placeholder="What are your thoughts?"
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
+                                className="w-full bg-transparent text-[1.125rem] text-on-surface-variant leading-[1.7] outline-none resize-none min-h-[300px]"
+                                placeholder="Write your post content..."
                             />
                         </div>
 
-                        <div className="flex justify-end pt-4 border-t border-white/10">
-                            <button
-                                type="submit"
-                                className={`px-8 py-3 rounded-full font-bold text-[14px] text-white transition-all transform active:scale-95 shadow-lg ${title ? 'bg-accent hover:bg-accent-hover shadow-accent/20 cursor-pointer' : 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed shadow-none'}`}
-                                disabled={!title}
-                            >
-                                Publish Post
+                        {/* Submit — mobile */}
+                        <div className="lg:hidden flex gap-3">
+                            <button type="submit" disabled={loading || !title.trim() || !content.trim()}
+                                className={`flex-1 py-3.5 btn-primary text-[15px] cursor-pointer ${loading || !title.trim() || !content.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                style={{ borderRadius: '0.75rem' }}>
+                                {loading ? 'Saving...' : 'Create Post'}
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
 
-            <div className="mt-6">
-                <div className="glass-panel p-6 rounded-2xl transition-colors duration-300">
-                    <h3 className="font-bold text-[15px] text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-accent"></span>
-                        Posting Rules
-                    </h3>
-                    <ol className="list-decimal list-inside text-[13px] text-slate-300 space-y-3 leading-relaxed">
-                        <li className="pl-2">Remember the human</li>
-                        <li className="pl-2">Behave like you would in real life</li>
-                        <li className="pl-2">Look for the original source of content</li>
-                        <li className="pl-2">Search for duplicates before posting</li>
-                        <li className="pl-2">Read the community's rules</li>
-                    </ol>
+                {/* Sidebar — Right */}
+                <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-24 self-start">
+                    {/* Media Upload */}
+                    <div className="card-l2 p-6" style={{ borderRadius: '1.5rem' }}>
+                        <p className="label-meta text-on-surface-variant mb-4">Media</p>
+
+                        {!mediaPreview ? (
+                            <div
+                                className={`flex flex-col items-center justify-center py-10 rounded-xl cursor-pointer transition-all duration-200 ${
+                                    isDragOver ? 'bg-primary/10' : 'bg-surface-lowest/50 hover:bg-surface-lowest'
+                                }`}
+                                onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                onDragLeave={() => setIsDragOver(false)}
+                                onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="w-12 h-12 rounded-xl bg-surface-high flex items-center justify-center mb-3 hover:bg-primary/10 transition-colors">
+                                    <span className="material-symbols-outlined text-[24px] text-primary">cloud_upload</span>
+                                </div>
+                                <p className="text-[13px] font-[600] text-on-surface mb-1">Drop or browse</p>
+                                <p className="text-[11px] text-outline-variant">Images & videos up to 50MB</p>
+                            </div>
+                        ) : (
+                            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                                {mediaType === 'video' ? (
+                                    <video src={mediaPreview} className="w-full h-full object-cover" muted />
+                                ) : (
+                                    <img src={mediaPreview} className="w-full h-full object-cover" alt="Preview" />
+                                )}
+                                <div className="absolute inset-0" style={{ background: 'linear-gradient(transparent 60%, rgba(11,19,38,0.8))' }}></div>
+                                <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                                    <span className="chip text-[9px]">{mediaType}</span>
+                                    <span className="text-[10px] text-on-surface-variant font-[600]">{formatSize(mediaFile.size)}</span>
+                                </div>
+                                <button onClick={clearMedia} className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-canvas/60 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors cursor-pointer">
+                                    <span className="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </div>
+                        )}
+
+                        <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden"
+                            onChange={(e) => handleFile(e.target.files[0])} />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="card-l2 p-6 space-y-3 hidden lg:block" style={{ borderRadius: '1.5rem' }}>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading || !title.trim() || !content.trim()}
+                            className={`w-full py-3.5 btn-primary text-[15px] cursor-pointer ${loading || !title.trim() || !content.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            style={{ borderRadius: '0.75rem' }}
+                        >
+                            {loading ? 'Saving...' : 'Create Post'}
+                        </button>
+                        <button onClick={() => navigate('/')} className="w-full py-3 btn-ghost text-[14px] font-[600] cursor-pointer" style={{ borderRadius: '0.75rem' }}>
+                            Discard
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { ArrowBigUp, ArrowBigDown, MessageSquare, Share2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { postService } from '../api/services';
 import { useNavigate } from 'react-router-dom';
 import { timeAgo } from '../utils/timeAgo';
@@ -7,6 +6,7 @@ import { timeAgo } from '../utils/timeAgo';
 const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDelete = false, onDelete }) => {
     const navigate = useNavigate();
     const [post, setPost] = React.useState(initialPost);
+    const [shared, setShared] = React.useState(false);
 
     React.useEffect(() => {
         setPost(initialPost);
@@ -23,93 +23,166 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
     };
 
     const goToDetail = () => {
-        if (!isDetail) {
-            navigate(`/post/${post.id}`);
+        if (!isDetail) navigate(`/post/${post.id}`);
+    };
+
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}/post/${post.id}`;
+        const shareData = {
+            title: `Discussion Forum: ${post.title}`,
+            text: post.content?.slice(0, 100) + '...',
+            url: url,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+                return;
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error('Share failed:', err);
+            }
+        }
+
+        // Fallback to clipboard
+        try {
+            await navigator.clipboard.writeText(url);
+            setShared(true);
+            setTimeout(() => setShared(false), 2000);
+        } catch (err) {
+            console.error('Clipboard failed:', err);
         }
     };
 
     return (
         <div
             onClick={goToDetail}
-            className={`flex items-stretch glass-panel p-[20px] rounded-2xl gap-4 ${isDetail ? 'cursor-default' : 'cursor-pointer'} hover:bg-white/10 transition-all duration-300 mb-5 group relative ${post.isHot ? 'border-accent/30 shadow-[0_0_15px_rgba(37,99,235,0.15)]' : ''}`}
+            className={`card-l2 p-6 transition-all duration-200 relative group ${
+                isDetail ? 'cursor-default' : 'hover-glow cursor-pointer'
+            }`}
+            style={{ borderRadius: '1.5rem' }}
         >
-            {/* Delete Button */}
+            {/* Delete */}
             {showDelete && (
                 <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(post.id);
-                    }}
-                    className="absolute top-2 right-2 p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-full transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
-                    title="Delete Post"
+                    onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
+                    className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 z-10 opacity-0 group-hover:opacity-100 cursor-pointer"
                 >
-                    <Trash2 className="w-4 h-4" />
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
                 </button>
             )}
 
-            {/* Vote Column */}
-            <div onClick={(e)=>e.stopPropagation() } className="flex flex-col items-center justify-start gap-1 w-[44px] shrink-0 pt-1">
-                <button
-                    onClick={(e) => handleVote(e, 'upvote')}
-                    className={`w-10 h-10 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${post.userVote === 'upvote' ? 'text-accent bg-accent/20' : 'text-slate-500 hover:text-accent hover:bg-accent/10'}`}
-                >
-                    <ArrowBigUp className={`w-6 h-6 ${post.userVote === 'upvote' ? 'fill-current' : ''}`} />
-                </button>
-                <span className={`text-[16px] font-bold cursor-default leading-none transition-colors py-1 ${post.userVote === 'upvote' ? 'text-accent' : post.userVote === 'downvote' ? 'text-red-400' : 'text-slate-300'}`}>
-                    {post.voteCount || 0}
-                </span>
-                <button
-                    onClick={(e) => handleVote(e, 'downvote')}
-                    className={`w-10 h-10 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-200 hover:scale-110 active:scale-90 ${post.userVote === 'downvote' ? 'text-red-400 bg-red-500/20' : 'text-slate-500 hover:text-red-400 hover:bg-red-500/10'}`}
-                >
-                    <ArrowBigDown className={`w-6 h-6 ${post.userVote === 'downvote' ? 'fill-current' : ''}`} />
-                </button>
+            {/* Header meta */}
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-canvas text-[11px] font-[800]">
+                    {(post.username || 'U')[0].toUpperCase()}
+                </div>
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                    <span className="text-[13px] font-[600] text-on-surface">
+                        {post.username || 'user'}
+                    </span>
+                    <span className="text-outline-variant text-[11px]">·</span>
+                    <span className="label-meta text-[10px]" style={{ letterSpacing: '0.1em' }}>
+                        {timeAgo(post.createdAt || post.createdDate)}
+                    </span>
+                </div>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between">
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <span className={`px-3 py-[3px] rounded-full text-[11px] font-bold tracking-wide uppercase border border-white/10 ${post.isHot ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                        {post.isHot ? 'Hot' : 'Discussion'}
-                    </span>
-                    <span className="text-[13px] text-slate-400 truncate font-medium">
-                        r/community <span className="text-slate-600 mx-1">•</span> Posted by <span className="text-slate-300">u/{post.username || 'user'}</span> <span className="text-slate-600 mx-1">•</span> {timeAgo(post.createdAt || post.createdDate)}
-                    </span>
+            {/* Title */}
+            <h3 className="text-[1.25rem] font-[700] text-on-surface mb-2 leading-[1.35] tracking-tight">
+                {post.title}
+            </h3>
+
+            {/* Content */}
+            <p className={`text-[1rem] text-on-surface-variant leading-[1.7] mb-5 whitespace-pre-line break-words ${
+                isDetail ? '' : 'line-clamp-3'
+            }`}>
+                {post.content}
+            </p>
+
+            {/* Media */}
+            {post.mediaUrl && (
+                <div
+                    className="mb-5 rounded-2xl overflow-hidden"
+                    style={{ background: '#060e20' }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {post.mediaType === 'video' ? (
+                        <video
+                            src={post.mediaUrl}
+                            controls
+                            className="w-full max-h-[450px] object-contain"
+                            preload="metadata"
+                        />
+                    ) : (
+                        <img
+                            src={post.mediaUrl}
+                            alt="Post media"
+                            className="w-full max-h-[450px] object-contain img-hover"
+                            loading="lazy"
+                        />
+                    )}
                 </div>
+            )}
 
-                {/* Body */}
-                <h3 className="text-[20px] font-bold text-white mb-2.5 leading-[1.4] hover:text-accent transition-colors duration-200 tracking-tight">
-                    {post.title}
-                </h3>
-                <p className={`text-[15px] text-slate-300 leading-[1.6] mb-5 whitespace-pre-line break-words opacity-90 ${isDetail ? '' : 'line-clamp-3'}`}>
-                    {post.content}
-                </p>
-
-                {/* Footer */}
-                <div className="flex items-center gap-3 mt-auto">
+            {/* Footer actions */}
+            <div className="flex items-center gap-3 mt-auto">
+                {/* Vote pill */}
+                <div className="vote-pill px-1 py-1 flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
                     <button
-                        onClick={(e) => {
-                             e.stopPropagation();
-        if (onCommentClick) {
-            onCommentClick();
-        } else {
-            navigate(`/post/${post.id}`);
-        }
-    }}
-                        className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 px-4 py-2 rounded-full text-[13px] font-semibold transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                        onClick={(e) => handleVote(e, 'upvote')}
+                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
+                            post.userVote === 'upvote' 
+                            ? 'text-white bg-[#818cf8] ring-2 ring-[#818cf8]/50 shadow-[0_0_20px_rgba(129,140,248,0.5)]' 
+                            : 'text-on-surface-variant hover:text-[#818cf8] hover:bg-[#818cf8]/10'
+                        }`}
+                        title="Upvote"
                     >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>{post.totalCommentCount ?? post.commentCount ?? 0} Comments</span>
+                        <span className={`material-symbols-outlined text-[20px] ${post.userVote === 'upvote' ? 'filled' : ''}`}>arrow_upward</span>
                     </button>
-                    <button className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 px-4 py-2 rounded-full text-[13px] font-semibold transition-all cursor-pointer shadow-sm">
-                        <Share2 className="w-4 h-4" />
-                        <span>Share</span>
-                    </button>
-                    <button className="flex items-center gap-2 bg-white/5 border border-transparent hover:border-white/10 text-slate-300 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all cursor-pointer shadow-sm h-[38px] w-[38px] justify-center">
-                        <MoreHorizontal className="w-[18px] h-[18px]" />
+                    <span className={`text-[15px] font-[900] min-w-[32px] text-center transition-all duration-300 ${
+                        post.userVote === 'upvote' ? 'text-[#818cf8] scale-110' : post.userVote === 'downvote' ? 'text-[#ff5252] scale-110' : 'text-on-surface'
+                    }`}>
+                        {post.voteCount || 0}
+                    </span>
+                    <button
+                        onClick={(e) => handleVote(e, 'downvote')}
+                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
+                            post.userVote === 'downvote' 
+                            ? 'text-white bg-[#ff5252] ring-2 ring-[#ff5252]/50 shadow-[0_0_20px_rgba(255,82,82,0.5)]' 
+                            : 'text-on-surface-variant hover:text-[#ff5252] hover:bg-[#ff5252]/10'
+                        }`}
+                        title="Downvote"
+                    >
+                        <span className={`material-symbols-outlined text-[20px] ${post.userVote === 'downvote' ? 'filled' : ''}`}>arrow_downward</span>
                     </button>
                 </div>
+
+                {/* Comments */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (onCommentClick) onCommentClick();
+                        else navigate(`/post/${post.id}`);
+                    }}
+                    className="btn-ghost btn-pill flex items-center gap-2 px-4 py-2 text-[13px] font-[600] text-on-surface-variant hover:text-on-surface"
+                >
+                    <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                    {post.totalCommentCount ?? post.commentCount ?? 0}
+                </button>
+
+                {/* Share */}
+                <button
+                    onClick={handleShare}
+                    className={`btn-ghost btn-pill flex items-center gap-2 px-4 py-2 text-[13px] font-[600] transition-all duration-300 ${
+                        shared ? 'text-primary bg-primary/10' : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                >
+                    <span className={`material-symbols-outlined text-[16px] ${shared ? 'filled' : ''}`}>
+                        {shared ? 'check_circle' : 'share'}
+                    </span>
+                    {shared ? 'Link Copied' : 'Share'}
+                </button>
             </div>
         </div>
     );

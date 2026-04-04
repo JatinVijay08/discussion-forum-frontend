@@ -10,6 +10,7 @@ export default function Navbar() {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const hideSearch = ['/login', '/register'].includes(location.pathname);
 
@@ -18,6 +19,15 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isMobileMenuOpen]);
 
   return (
     <nav
@@ -111,10 +121,103 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile placeholder */}
-          <div className="flex md:hidden items-center"></div>
+          {/* Mobile Menu Toggle */}
+          <div className="flex md:hidden items-center">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 -mr-2 text-on-surface hover:text-primary transition-colors cursor-pointer"
+              aria-label="Toggle mobile menu"
+            >
+              <span className="material-symbols-outlined text-[28px]">
+                {isMobileMenuOpen ? 'close' : 'menu'}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 top-16 bg-surface-lowest/95 backdrop-blur-xl z-40 border-t border-white/5 flex flex-col pt-8 px-6 overflow-y-auto pb-24">
+          {!hideSearch && (
+            <div className="relative w-full mb-8">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-[18px]">search</span>
+              <input
+                type="text"
+                className="w-full pl-11 pr-4 py-3.5 obsidian-input rounded-xl text-[15px] font-[500]"
+                placeholder="Search discussions..."
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-4">
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-surface-high border border-white/5 hover:border-white/10 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-container to-primary flex items-center justify-center text-canvas font-[800] text-[18px]">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-[16px] font-[700] text-on-surface">{user.username}</div>
+                    <div className="text-[13px] text-on-surface-variant font-[500]">View Profile</div>
+                  </div>
+                </Link>
+
+                <Link
+                  to="/create"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full btn-primary btn-pill cta-glow flex items-center justify-center gap-2 py-4 mt-2 text-[15px] cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[20px]">edit_square</span>
+                  Create Post
+                </Link>
+
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); setIsLogoutModalOpen(true); }}
+                  className="w-full flex items-center justify-center gap-2 py-4 text-[15px] font-[600] text-error bg-error/10 hover:bg-error/20 rounded-xl transition-colors mt-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                {hideSearch ? (
+                  <Link
+                    to="/explore"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex justify-center items-center gap-2 px-5 py-4 rounded-xl text-[15px] font-[700] text-on-surface transition-colors border border-outline-variant/30 hover:bg-surface-high/30"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">travel_explore</span>
+                    Browse Posts
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-3 mt-4">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full flex justify-center py-4 rounded-xl text-on-surface bg-surface-high border border-white/5 font-[600] text-[15px]"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full flex justify-center py-4 btn-primary btn-pill cta-glow text-[15px]"
+                    >
+                      Join Forum
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <LogoutModal
         isOpen={isLogoutModalOpen}

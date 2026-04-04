@@ -144,7 +144,7 @@ export default function PostDetail() {
                             </div>
 
                             {/* Content */}
-                            <div className="text-[14px] text-on-surface-variant whitespace-pre-line break-all leading-[1.7] py-3 px-4 rounded-xl" style={{ background: '#131b2e' }}>
+                            <div className="text-[14px] text-on-surface-variant whitespace-pre-line break-words leading-[1.7] py-3 px-4 rounded-xl" style={{ background: '#131b2e' }}>
                                 {localComment.content}
                             </div>
 

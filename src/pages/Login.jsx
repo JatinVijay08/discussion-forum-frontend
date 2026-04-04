@@ -83,22 +83,29 @@ export default function Login() {
             </div>
 
             {/* Right Pane - Auth Form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
-                {/* Browse Discussions Link */}
-                <Link to="/explore" className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[700] text-on-surface-variant hover:text-white transition-colors border border-outline-variant/30 hover:bg-surface-high/30 z-50">
-                    <span className="material-symbols-outlined text-[16px]">travel_explore</span>
-                    Browse Posts
-                </Link>
-
-                {/* Mobile Logo Fallback */}
-                <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
+                
+                {/* Mobile/Auth Header */}
+                <div className="absolute top-0 left-0 w-full flex items-center justify-between p-6 sm:p-8 z-50">
+                    {/* Mobile Logo Fallback */}
+                    <div className="lg:hidden flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+                        </div>
+                        <span className="text-[18px] font-[800] text-white tracking-tight">Discussion Forum</span>
                     </div>
-                    <span className="text-[20px] font-[800] text-white tracking-tight">Discussion Forum</span>
+
+                    <div className="hidden lg:block"></div>
+
+                    {/* Browse Discussions Link */}
+                    <Link to="/explore" className="flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[700] text-on-surface-variant hover:text-white transition-colors border border-outline-variant/30 hover:bg-surface-high/30 z-50">
+                        <span className="material-symbols-outlined text-[16px]">travel_explore</span>
+                        <span className="hidden sm:inline">Browse Posts</span>
+                        <span className="sm:hidden">Explore</span>
+                    </Link>
                 </div>
 
-                <div className="w-full max-w-[400px]">
+                <div className="w-full max-w-[400px] mt-24 lg:mt-0">
                     <h1 className="text-[2rem] font-[800] text-white tracking-tight mb-2">Welcome Back</h1>
                     <p className="text-[15px] font-[500] text-on-surface-variant mb-10">Sign in to your account</p>
 

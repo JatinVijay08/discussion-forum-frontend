@@ -93,22 +93,29 @@ export default function Register() {
             </div>
 
             {/* Right Pane - Auth Form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 relative h-screen overflow-y-auto w-full">
-                {/* Browse Discussions Link */}
-                <Link to="/explore" className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[700] text-on-surface-variant hover:text-white transition-colors border border-outline-variant/30 hover:bg-surface-high/30 z-50">
-                    <span className="material-symbols-outlined text-[16px]">travel_explore</span>
-                    Browse Posts
-                </Link>
-
-                {/* Mobile Logo Fallback */}
-                <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3 z-50">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12 relative min-h-screen overflow-y-auto">
+                
+                {/* Mobile/Auth Header */}
+                <div className="absolute top-0 left-0 w-full flex items-center justify-between p-6 sm:p-8 z-50">
+                    {/* Mobile Logo Fallback */}
+                    <div className="lg:hidden flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-container to-primary flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[16px] text-canvas">album</span>
+                        </div>
+                        <span className="text-[18px] font-[800] text-white tracking-tight">Discussion Forum</span>
                     </div>
-                    <span className="text-[20px] font-[800] text-white tracking-tight">Discussion Forum</span>
+
+                    <div className="hidden lg:block"></div>
+
+                    {/* Browse Discussions Link */}
+                    <Link to="/explore" className="flex items-center gap-2 px-4 py-2 rounded-full text-[12px] font-[700] text-on-surface-variant hover:text-white transition-colors border border-outline-variant/30 hover:bg-surface-high/30 z-50">
+                        <span className="material-symbols-outlined text-[16px]">travel_explore</span>
+                        <span className="hidden sm:inline">Browse Posts</span>
+                        <span className="sm:hidden">Explore</span>
+                    </Link>
                 </div>
 
-                <div className="w-full max-w-[400px] mt-20 lg:mt-0">
+                <div className="w-full max-w-[400px] mt-24 lg:mt-0">
                     {success ? (
                         <div className="text-center py-16 animate-in fade-in duration-300">
                             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
@@ -171,7 +178,7 @@ export default function Register() {
                                     />
                                 </div>
                                 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-[10px] font-[800] tracking-[0.1em] uppercase text-on-surface-variant block mb-2 px-1">Password</label>
                                         <div className="relative">

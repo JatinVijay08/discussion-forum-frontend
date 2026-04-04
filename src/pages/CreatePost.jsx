@@ -93,11 +93,14 @@ export default function CreatePost() {
                         </div>
 
                         {/* Submit — mobile */}
-                        <div className="lg:hidden flex gap-3">
+                        <div className="lg:hidden flex flex-col gap-3">
                             <button type="submit" disabled={loading || !title.trim() || !content.trim()}
-                                className={`flex-1 py-3.5 btn-primary text-[15px] cursor-pointer ${loading || !title.trim() || !content.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                className={`w-full py-3.5 btn-primary text-[15px] cursor-pointer ${loading || !title.trim() || !content.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 style={{ borderRadius: '0.75rem' }}>
                                 {loading ? 'Saving...' : 'Create Post'}
+                            </button>
+                            <button type="button" onClick={() => navigate('/')} className="w-full py-3 btn-ghost text-[14px] font-[600] cursor-pointer" style={{ borderRadius: '0.75rem' }}>
+                                Discard
                             </button>
                         </div>
                     </form>

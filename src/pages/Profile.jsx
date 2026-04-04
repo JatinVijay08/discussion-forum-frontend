@@ -129,12 +129,12 @@ export default function Profile() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-4">
-                                    <h1 className="text-[2.5rem] md:text-[3.5rem] font-[800] tracking-[-0.04em] leading-[1.0] text-white">
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <h1 className="text-[2.5rem] md:text-[3.5rem] font-[800] tracking-[-0.04em] leading-[1.0] text-white break-all sm:break-words">
                                         {user?.username || authUser?.username || 'User'}
                                     </h1>
                                     <button onClick={startEditing}
-                                        className="p-2.5 rounded-xl hover:bg-surface-high/40 text-on-surface-variant hover:text-white transition-colors cursor-pointer">
+                                        className="p-2.5 rounded-xl hover:bg-surface-high/40 text-on-surface-variant hover:text-white transition-colors cursor-pointer shrink-0">
                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                     </button>
                                 </div>
@@ -159,9 +159,9 @@ export default function Profile() {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4 mt-10 max-w-[480px]">
-                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.5rem] font-[800] text-on-surface mb-1">{posts.length}</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-10 w-full max-w-[480px]">
+                <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{posts.length}</p>
                     <p className="label-meta text-[9px] text-primary flex items-center justify-center gap-1">
                         Posts
                         <span className="relative group cursor-default">
@@ -172,8 +172,8 @@ export default function Profile() {
                         </span>
                     </p>
                 </div>
-                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.5rem] font-[800] text-tertiary-gold mb-1 pulse-accent">{karma}</p>
+                <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-tertiary-gold mb-1 pulse-accent">{karma}</p>
                     <p className="label-meta text-[9px] text-tertiary-gold flex items-center justify-center gap-1">
                         Karma
                         <span className="relative group cursor-default">
@@ -184,8 +184,8 @@ export default function Profile() {
                         </span>
                     </p>
                 </div>
-                <div className="card-l2 p-5 text-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.5rem] font-[800] text-on-surface mb-1">{totalComments}</p>
+                <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{totalComments}</p>
                     <p className="label-meta text-[9px] text-primary-container flex items-center justify-center gap-1">
                         Comments
                         <span className="relative group cursor-default">

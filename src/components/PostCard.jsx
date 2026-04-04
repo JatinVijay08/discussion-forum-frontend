@@ -126,35 +126,35 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
             )}
 
             {/* Footer actions */}
-            <div className="flex items-center gap-3 mt-auto">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-auto">
                 {/* Vote pill */}
                 <div className="vote-pill px-1 py-1 flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
                     <button
                         onClick={(e) => handleVote(e, 'upvote')}
-                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
+                        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
                             post.userVote === 'upvote' 
                             ? 'text-white bg-[#818cf8] ring-2 ring-[#818cf8]/50 shadow-[0_0_20px_rgba(129,140,248,0.5)]' 
                             : 'text-on-surface-variant hover:text-[#818cf8] hover:bg-[#818cf8]/10'
                         }`}
                         title="Upvote"
                     >
-                        <span className={`material-symbols-outlined text-[20px] ${post.userVote === 'upvote' ? 'filled' : ''}`}>arrow_upward</span>
+                        <span className={`material-symbols-outlined text-[18px] sm:text-[20px] ${post.userVote === 'upvote' ? 'filled' : ''}`}>arrow_upward</span>
                     </button>
-                    <span className={`text-[15px] font-[900] min-w-[32px] text-center transition-all duration-300 ${
+                    <span className={`text-[13px] sm:text-[15px] font-[900] min-w-[28px] sm:min-w-[32px] text-center transition-all duration-300 ${
                         post.userVote === 'upvote' ? 'text-[#818cf8] scale-110' : post.userVote === 'downvote' ? 'text-[#ff5252] scale-110' : 'text-on-surface'
                     }`}>
                         {post.voteCount || 0}
                     </span>
                     <button
                         onClick={(e) => handleVote(e, 'downvote')}
-                        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
+                        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer hover:scale-110 active:scale-95 ${
                             post.userVote === 'downvote' 
                             ? 'text-white bg-[#ff5252] ring-2 ring-[#ff5252]/50 shadow-[0_0_20px_rgba(255,82,82,0.5)]' 
                             : 'text-on-surface-variant hover:text-[#ff5252] hover:bg-[#ff5252]/10'
                         }`}
                         title="Downvote"
                     >
-                        <span className={`material-symbols-outlined text-[20px] ${post.userVote === 'downvote' ? 'filled' : ''}`}>arrow_downward</span>
+                        <span className={`material-symbols-outlined text-[18px] sm:text-[20px] ${post.userVote === 'downvote' ? 'filled' : ''}`}>arrow_downward</span>
                     </button>
                 </div>
 
@@ -165,23 +165,23 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
                         if (onCommentClick) onCommentClick();
                         else navigate(`/post/${post.id}`);
                     }}
-                    className="btn-ghost btn-pill flex items-center gap-2 px-4 py-2 text-[13px] font-[600] text-on-surface-variant hover:text-on-surface"
+                    className="btn-ghost btn-pill flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-[12px] sm:text-[13px] font-[600] text-on-surface-variant hover:text-on-surface"
                 >
-                    <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                    <span className="material-symbols-outlined text-[15px] sm:text-[16px]">chat_bubble</span>
                     {post.totalCommentCount ?? post.commentCount ?? 0}
                 </button>
 
                 {/* Share */}
                 <button
                     onClick={handleShare}
-                    className={`btn-ghost btn-pill flex items-center gap-2 px-4 py-2 text-[13px] font-[600] transition-all duration-300 ${
+                    className={`btn-ghost btn-pill flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-[12px] sm:text-[13px] font-[600] transition-all duration-300 ${
                         shared ? 'text-primary bg-primary/10' : 'text-on-surface-variant hover:text-on-surface'
                     }`}
                 >
-                    <span className={`material-symbols-outlined text-[16px] ${shared ? 'filled' : ''}`}>
+                    <span className={`material-symbols-outlined text-[15px] sm:text-[16px] ${shared ? 'filled' : ''}`}>
                         {shared ? 'check_circle' : 'share'}
                     </span>
-                    {shared ? 'Link Copied' : 'Share'}
+                    <span className="hidden sm:inline">{shared ? 'Link Copied' : 'Share'}</span>
                 </button>
             </div>
         </div>

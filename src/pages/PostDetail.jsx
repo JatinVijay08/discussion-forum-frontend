@@ -247,7 +247,7 @@ export default function PostDetail() {
                         <div className="card-l2 p-8 text-center mb-10 flex flex-col items-center" style={{ borderRadius: '1.5rem' }}>
                             <h4 className="text-on-surface text-[1rem] font-[700] mb-2">Join the Discussion</h4>
                             <p className="text-on-surface-variant text-[13px] mb-6 max-w-sm">Sign in to leave a comment, vote, and curate the collective.</p>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap items-center justify-center gap-3">
                                 <button onClick={() => navigate('/login')} className="btn-secondary btn-pill px-6 py-2.5 text-[13px] cursor-pointer">Sign In</button>
                                 <button onClick={() => navigate('/register')} className="btn-primary btn-pill px-6 py-2.5 text-[13px] cursor-pointer">Join Forum</button>
                             </div>
@@ -270,7 +270,7 @@ export default function PostDetail() {
                                     ))}
 
                                     {totalPages > 1 && (
-                                        <div className="flex justify-center items-center gap-2 mt-8 pt-6" style={{ borderTop: '1px solid rgba(69, 70, 83, 0.15)' }}>
+                                        <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 mt-8 pt-6" style={{ borderTop: '1px solid rgba(69, 70, 83, 0.15)' }}>
                                             <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}
                                                 className="btn-ghost px-3 py-1.5 text-[12px] font-[700] cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" style={{ borderRadius: '0.5rem' }}>
                                                 Previous

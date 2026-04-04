@@ -131,7 +131,8 @@ export default function Register() {
 
                             {/* Social Logins */}
                             <div className="mb-10 flex justify-center w-full">
-                                <div 
+                                <button 
+                                    type="button"
                                     className="relative w-full h-[52px] rounded-xl overflow-hidden bg-surface-low border border-white/5 hover:bg-surface-high/50 transition-colors group cursor-pointer"
                                     onClick={handleGoogleRedirectClick}
                                 >
@@ -144,7 +145,7 @@ export default function Register() {
                                         </svg>
                                         <span className="text-[13px] font-[700] text-white tracking-wide">Continue with Google</span>
                                     </div>
-                                </div>
+                                </button>
                             </div>
 
                             {/* Divider */}

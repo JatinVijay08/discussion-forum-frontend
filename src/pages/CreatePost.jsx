@@ -92,17 +92,6 @@ export default function CreatePost() {
                             />
                         </div>
 
-                        {/* Submit — mobile */}
-                        <div className="lg:hidden flex flex-col gap-3">
-                            <button type="submit" disabled={loading || !title.trim() || !content.trim()}
-                                className={`w-full py-3.5 btn-primary text-[15px] cursor-pointer ${loading || !title.trim() || !content.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                style={{ borderRadius: '0.75rem' }}>
-                                {loading ? 'Saving...' : 'Create Post'}
-                            </button>
-                            <button type="button" onClick={() => navigate('/')} className="w-full py-3 btn-ghost text-[14px] font-[600] cursor-pointer" style={{ borderRadius: '0.75rem' }}>
-                                Discard
-                            </button>
-                        </div>
                     </form>
                 </div>
 
@@ -151,7 +140,7 @@ export default function CreatePost() {
                     </div>
 
                     {/* Actions */}
-                    <div className="card-l2 p-6 space-y-3 hidden lg:block" style={{ borderRadius: '1.5rem' }}>
+                    <div className="card-l2 p-6 space-y-3" style={{ borderRadius: '1.5rem' }}>
                         <button
                             onClick={handleSubmit}
                             disabled={loading || !title.trim() || !content.trim()}

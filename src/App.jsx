@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import CreatePost from './pages/CreatePost';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthModal from './components/AuthModal';
 import { ToastProvider } from './context/ToastContext';
@@ -73,6 +74,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/:username"
+                element={
+                  <ProtectedRoute>
+                    <PublicProfile />
                   </ProtectedRoute>
                 }
               />

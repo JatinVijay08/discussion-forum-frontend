@@ -38,4 +38,6 @@ export const userService = {
     getUserPosts: (sort = 'new') => api.get('/users/posts', { params: { sort } }).then(res => res.data),
     deleteUserPost: (id) => api.delete(`/users/posts/${id}`),
     updateUsername: (username) => api.patch('/users/username', { username }).then(res => res.data),
+    getUserProfile: (username) => api.get('/users/profile/' + username).then(res => res.data),
+    getUserProfilePosts: (username, sort = 'new') => api.get('/users/profile/' + username + '/posts', { params: { sort } }).then(res => res.data),
 };

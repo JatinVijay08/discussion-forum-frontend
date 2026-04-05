@@ -79,8 +79,7 @@ export default function Profile() {
         catch (err) { setDeleteError('Failed to delete post.'); setPostToDelete(null); }
     };
 
-    const karma = posts.reduce((acc, p) => acc + (p.voteCount || 0), 0);
-    const totalComments = posts.reduce((acc, p) => acc + (p.commentCount || 0), 0);
+    // Stats are now fetched from backend via UserProfileResponse
 
     if (loadingUser) {
         return (
@@ -161,7 +160,7 @@ export default function Profile() {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-10 w-full max-w-[480px]">
                 <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{posts.length}</p>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{user?.postCount || 0}</p>
                     <p className="label-meta text-[9px] text-primary flex items-center justify-center gap-1">
                         Posts
                         <span className="relative group cursor-default">
@@ -173,7 +172,7 @@ export default function Profile() {
                     </p>
                 </div>
                 <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-tertiary-gold mb-1 pulse-accent">{karma}</p>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-tertiary-gold mb-1 pulse-accent">{user?.karma || 0}</p>
                     <p className="label-meta text-[9px] text-tertiary-gold flex items-center justify-center gap-1">
                         Karma
                         <span className="relative group cursor-default">
@@ -185,7 +184,7 @@ export default function Profile() {
                     </p>
                 </div>
                 <div className="card-l2 p-3 sm:p-5 text-center flex flex-col justify-center" style={{ borderRadius: '1.5rem' }}>
-                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{totalComments}</p>
+                    <p className="text-[1.25rem] sm:text-[1.5rem] font-[800] text-on-surface mb-1">{user?.commentCount || 0}</p>
                     <p className="label-meta text-[9px] text-primary-container flex items-center justify-center gap-1">
                         Comments
                         <span className="relative group cursor-default">
@@ -239,7 +238,7 @@ export default function Profile() {
                     ) : (
                         <div className="card-l2 p-12 text-center flex flex-col items-center gap-4" style={{ borderRadius: '1.5rem' }}>
                             <span className="material-symbols-outlined text-[36px] text-outline-variant">person</span>
-                            <h3 className="text-[1.125rem] font-[700] text-on-surface">No curations yet</h3>
+                            <h3 className="text-[1.125rem] font-[700] text-on-surface">No posts yet</h3>
                             <p className="text-[14px] text-on-surface-variant">Your contributions will appear here.</p>
                         </div>
                     )}
@@ -270,7 +269,7 @@ export default function Profile() {
             {postToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center p-4 atelier-overlay" style={{ justifyContent: 'center', alignItems: 'flex-start', paddingTop: '20vh' }}>
                     <div className="atelier-panel max-w-sm w-full p-7" style={{ borderRadius: '1.5rem' }}>
-                        <h3 className="text-[1.25rem] font-[700] text-on-surface tracking-tight mb-2">Remove Curation?</h3>
+                        <h3 className="text-[1.25rem] font-[700] text-on-surface tracking-tight mb-2">Remove Post?</h3>
                         <p className="text-on-surface-variant text-[13px] leading-[1.7] mb-7">
                             This will permanently remove the post and all its votes. This action cannot be undone.
                         </p>

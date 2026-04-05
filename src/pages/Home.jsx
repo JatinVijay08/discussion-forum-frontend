@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import PostCard from '../components/PostCard';
-import RecentPostsWidget from '../components/RecentPostsWidget';
+import RecentUsersWidget from '../components/RecentUsersWidget';
 
 export default function Home() {
     const [posts, setPosts] = useState([]);
@@ -196,7 +196,7 @@ export default function Home() {
                     {/* Right Sidebar */}
                     <div className="hidden lg:block w-full">
                         <div className="w-[300px] sticky top-24 self-start space-y-8">
-                        <RecentPostsWidget />
+                        <RecentUsersWidget />
 
                         {/* Footer */}
                         <div className="label-meta text-outline-variant px-1 space-y-3">

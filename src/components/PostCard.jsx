@@ -2,9 +2,11 @@ import React from 'react';
 import { postService } from '../api/services';
 import { useNavigate } from 'react-router-dom';
 import { timeAgo } from '../utils/timeAgo';
+import { useAuth } from '../context/AuthContext';
 
 const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDelete = false, onDelete }) => {
     const navigate = useNavigate();
+    const { user: authUser, openAuthModal } = useAuth();
     const [post, setPost] = React.useState(initialPost);
     const [shared, setShared] = React.useState(false);
 
@@ -78,7 +80,17 @@ const PostCard = ({ post: initialPost, isDetail = false, onCommentClick, showDel
                     {(post.username || 'U')[0].toUpperCase()}
                 </div>
                 <div className="flex items-center gap-2 text-on-surface-variant">
-                    <span className="text-[13px] font-[600] text-on-surface">
+                    <span 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (!authUser) {
+                                openAuthModal();
+                                return;
+                            }
+                            navigate(`/user/${post.username}`); 
+                        }}
+                        className="text-[13px] font-[600] text-on-surface hover:text-primary transition-colors cursor-pointer hover:underline"
+                    >
                         {post.username || 'user'}
                     </span>
                     <span className="text-outline-variant text-[11px]">·</span>

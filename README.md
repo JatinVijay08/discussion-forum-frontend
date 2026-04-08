@@ -1,4 +1,4 @@
-# Discussion Forum Frontend (Exhale) 🎨
+# Discussion Forum Frontend 🎨
 
 A sleek, responsive, and modern web application built with **React** and **Vite**, serving as the interface for the high-performance Discussion Forum platform.
 
@@ -51,4 +51,4 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 ---
 
-**Contact:** Jatin Vijayvargiya - [Connect on LinkedIn](https://www.linkedin.com/in/jatin-vijayvargiya-jatinv08/)
+**Contact:** Jatin Vijayvargiya - [Connect on LinkedIn](https://www.linkedin.com/in/jatin-vijayvargiya)

@@ -51,7 +51,4 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id
 
 ---
 
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
-
 **Contact:** Jatin Vijayvargiya - [Connect on LinkedIn](https://www.linkedin.com/in/jatin-vijayvargiya-jatinv08/)
